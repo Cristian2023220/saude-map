@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaúdeMap - Encontre serviços de saúde</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #00aba9;
+            --bg-light: #f0f2f5;
+            --text-dark: #333;
+            --card-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Cabeçalho --- */
+        .main-header {
+            background-color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            z-index: 1001; /* Fica acima do mapa */
+            position: relative;
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-icon { font-size: 2rem; color: var(--primary-color); }
+        .brand h1 { margin: 0; font-size: 1.6rem; color: #2c3e50; font-weight: 700; }
+        .brand p { margin: 0; font-size: 0.85rem; color: #7f8c8d; }
+
+        .btn-location {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0,171,169,0.2);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn-location:hover { background-color: #008f8d; transform: translateY(-2px); }
+        .btn-location:active { transform: translateY(0); }
+
+        /* --- Container Principal --- */
+        .main-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 30px;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- Cards de Estatística --- */
+        .stats-deck {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-5px); }
+
+        .stat-icon { font-size: 1.5rem; margin-bottom: 10px; padding: 12px; border-radius: 50%; display: inline-block; }
+        
+        .icon-hosp { color: #e74c3c; background-color: #fadbd8; }
+        .icon-farm { color: #27ae60; background-color: #d5f5e3; }
+        .icon-post { color: #3498db; background-color: #d6eaf8; }
+        .icon-upa { color: #f39c12; background-color: #fdebd0; }
+        .icon-clin { color: #9b59b6; background-color: #ebdef0; }
+
+        .stat-number { font-size: 2rem; font-weight: 800; margin: 5px 0; color: #2c3e50; }
+        .stat-label { color: #95a5a6; font-size: 0.9rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* --- Filtros --- */
+        .filters-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 5px; }
+        .filter-btn {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover { background-color: #f8f9fa; border-color: #ccc; }
+        .filter-btn.active { background-color: #2c3e50; color: white; border-color: #2c3e50; }
+
+        /* --- Mapa --- */
+        #map-container {
+            flex-grow: 1;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 4px solid white;
+            position: relative;
+            min-height: 400px;
+        }
+        #map { height: 100%; width: 100%; }
+
+        /* Estilos do Popup e Painel de Rota */
+        .popup-header { color: var(--primary-color); margin: 0 0 5px 0; border-bottom: 1px solid #eee; padding-bottom: 5px;}
+        .popup-type { background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; text-transform: uppercase; font-weight: bold;}
+        
+        /* Ajuste visual para o painel de instruções de rota */
+        .leaflet-routing-container {
+            background-color: white;
+            padding: 10px;
+            margin-right: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            width: 280px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="brand">
+            <i class="fas fa-heart-pulse brand-icon"></i>
+            <div>
+                <h1>SaúdeMap</h1>
+                <p>Localizador Inteligente de Saúde</p>
+            </div>
+        </div>
+        <button class="btn-location" onclick="getUserLocation()">
+            <i class="fas fa-location-crosshairs"></i> Minha Localização
+        </button>
+    </header>
+
+    <main class="main-container">
+        <section class="stats-deck">
+            <div class="stat-card">
+                <i class="fas fa-hospital stat-icon icon-hosp"></i>
+                <div class="stat-number">{{ total_hospitais }}</div>
+                <div class="stat-label">Hospitais</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-prescription-bottle-medical stat-icon icon-farm"></i>
+                <div class="stat-number">{{ total_farmacias }}</div>
+                <div class="stat-label">Farmácias</div>
+            </div>
+             <div class="stat-card">
+                <i class="fas fa-user-doctor stat-icon icon-post"></i>
+                <div class="stat-number">{{ total_postos }}</div>
+                <div class="stat-label">Postos</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-ambulance stat-icon icon-upa"></i>
+                <div class="stat-number">{{ total_upas }}</div>
+                <div class="stat-label">UPAs</div>
+            </div>
+             <div class="stat-card">
+                <i class="fas fa-stethoscope stat-icon icon-clin"></i>
+                <div class="stat-number">{{ total_clinicas }}</div>
+                <div class="stat-label">Clínicas</div>
+            </div>
+        </section>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <input type="text" id="input-endereco" placeholder="Digite um endereço (ex: Av. Paulista, 1000)" 
+        style="flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px;">
+    
+        <button onclick="buscarEndereco()" 
+        style="background: #2c3e50; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer;">
+        <i class="fas fa-search"></i> Buscar
+    </button>
+</div>
+        <section class="filters-bar">
+            <button class="filter-btn active" onclick="filtrarMapa('todos', this)"><i class="fas fa-layer-group"></i> Todos</button>
+            <button class="filter-btn" onclick="filtrarMapa('HOSP', this)"><i class="fas fa-hospital"></i> Hospitais</button>
+            <button class="filter-btn" onclick="filtrarMapa('FARM', this)"><i class="fas fa-prescription-bottle-medical"></i> Farmácias</button>
+            <button class="filter-btn" onclick="filtrarMapa('POST', this)"><i class="fas fa-user-doctor"></i> Postos</button>
+        </section>
+
+        <section id="map-container">
+            <div id="map"></div>
+        </section>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+    <script>
+        // --- CONFIGURAÇÃO E VARIÁVEIS GLOBAIS ---
+        const map = L.map('map');
+        const centroPadrao = [-23.550520, -46.633308]; 
+        map.setView(centroPadrao, 13);
+
+        // Visual do Mapa (CartoDB Voyager - Limpo)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            maxZoom: 20
+        }).addTo(map);
+
+        // Variáveis de Estado
+        let userLat = null;
+        let userLng = null;
+        let userMarker = null; // O pino do usuário
+        let controlRota = null; // O desenho da rota
+        let markersLayer = []; // Array com todos os pinos dos locais
+
+        // --- ÍCONES PERSONALIZADOS ---
+        const createIcon = (color) => {
+            return L.icon({
+                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            });
+        };
+
+        const icons = {
+            'HOSP': createIcon('red'),
+            'FARM': createIcon('green'),
+            'POST': createIcon('blue'),
+            'user': createIcon('gold') // Ícone do usuário
+        };
+
+
+        // --- CARREGAMENTO DOS DADOS (DJANGO -> JS) ---
+        const dadosDoDjango = '{{ pontos_json|escapejs }}';
+        let locaisSaude = [];
+
+        try {
+            if (dadosDoDjango) locaisSaude = JSON.parse(dadosDoDjango);
+        } catch (e) { console.error("Erro JSON:", e); }
+
+
+        // --- FUNÇÕES DE LÓGICA ---
+
+        // 1. Criar conteúdo HTML do Popup
+        function criarPopupContent(local) {
+            // Verifica se existem os campos opcionais
+            const htmlServicos = local.info.servicos ? 
+                `<div style="margin-top:8px; font-size:0.85em; color:#555;"><strong>🛠️ Serviços:</strong> ${local.info.servicos}</div>` : '';
+            
+            const htmlRemedios = local.info.medicamentos ? 
+                `<div style="margin-top:4px; font-size:0.85em; color:#555;"><strong>💊 Dispõe:</strong> ${local.info.medicamentos}</div>` : '';
+
+            return `
+                <div style="min-width: 220px; font-family: 'Segoe UI', sans-serif;">
+                    <h3 class="popup-header">${local.nome}</h3>
+                    <span class="popup-type">${local.tipo_nome}</span>
+                    
+                    <div style="margin-top: 10px; line-height: 1.5;">
+                        <div><strong>🕒 Horário:</strong> ${local.info.horario || 'Não informado'}</div>
+                        ${local.info.fone ? `<div><strong>📞 Tel:</strong> ${local.info.fone}</div>` : ''}
+                        ${htmlServicos}
+                        ${htmlRemedios}
+                    </div>
+
+                    <button onclick="tracarRota(${local.lat}, ${local.lng})" 
+                        style="width:100%; margin-top:12px; padding:10px; background:#00aba9; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:5px;">
+                        <i class="fas fa-route"></i> Como Chegar
+                    </button>
+                </div>
+            `;
+        }
+
+        // 2. Traçar Rota (Integração OSRM)
+        window.tracarRota = function(destLat, destLng) {
+            // Verifica se temos a localização do usuário
+            if (!userLat || !userLng) {
+                alert("Por favor, clique no botão 'Minha Localização' no topo da página primeiro!");
+                getUserLocation(); // Tenta pegar agora
+                return;
+            }
+
+            // Remove rota anterior se existir
+            if (controlRota) {
+                map.removeControl(controlRota);
+            }
+
+            // Cria a nova rota
+            controlRota = L.Routing.control({
+                waypoints: [
+                    L.latLng(userLat, userLng), // Origem (Usuário)
+                    L.latLng(destLat, destLng)  // Destino (Hospital)
+                ],
+                routeWhileDragging: false,
+                language: 'pt-BR', // Textos em Português
+                lineOptions: {
+                    styles: [{color: '#00aba9', opacity: 0.8, weight: 6}]
+                },
+                // Impede que crie novos marcadores em cima dos nossos
+                createMarker: function() { return null; },
+                addWaypoints: false, // Esconde bolinha de arrastar rota
+                draggableWaypoints: false
+            }).addTo(map);
+
+            // Fecha o popup para limpar a visão
+            map.closePopup();
+        };
+
+        // 3. Adicionar Marcadores ao Mapa
+        if (locaisSaude && locaisSaude.length > 0) {
+            locaisSaude.forEach(local => {
+                const iconUse = icons[local.tipo_sigla] || icons['POST'];
+
+                const marker = L.marker([local.lat, local.lng], {icon: iconUse})
+                    .bindPopup(criarPopupContent(local));
+                
+                marker.tipoSigla = local.tipo_sigla; // Guarda tipo para filtro
+                markersLayer.push(marker);
+                marker.addTo(map);
+            });
+            
+            // Ajusta zoom para mostrar todos (se houver pontos)
+            if (markersLayer.length > 0) {
+                const grupo = L.featureGroup(markersLayer);
+                map.fitBounds(grupo.getBounds(), {padding: [50, 50]});
+            }
+        }
+
+        // 4. Filtros
+        window.filtrarMapa = function(tipoAlvo, btnClicado) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnClicado.classList.add('active');
+
+            markersLayer.forEach(marker => {
+                if (tipoAlvo === 'todos' || marker.tipoSigla === tipoAlvo) {
+                    if (!map.hasLayer(marker)) map.addLayer(marker);
+                } else {
+                    if (map.hasLayer(marker)) map.removeLayer(marker);
+                }
+            });
+        }
+
+        // 5. Geolocalização do Usuário
+        window.getUserLocation = function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLat = position.coords.latitude;
+                        userLng = position.coords.longitude;
+                        
+                        // Atualiza marcador do usuário
+                        if (userMarker) map.removeLayer(userMarker);
+                        
+                        userMarker = L.marker([userLat, userLng], {icon: icons['user']})
+                            .addTo(map)
+                            .bindPopup("<strong>Você está aqui!</strong>").openPopup();
+
+                        map.setView([userLat, userLng], 15);
+                    },
+                    (erro) => { 
+                        console.error(erro);
+                        alert("Não foi possível obter sua localização. Verifique se o GPS está ativo."); 
+                    }
+                );
+            } else {
+                alert("Navegador não suporta geolocalização.");
+            }
+        }
+
+        // --- FUNÇÃO DE BUSCA DE ENDEREÇO (REQUISIÇÃO HTTP) ---
+    async function buscarEndereco() {
+    const endereco = document.getElementById('input-endereco').value;
+    
+    if (!endereco) {
+        alert("Por favor, digite um endereço.");
+        return;
+    }
+
+    // Feedback visual (Mudando texto do botão)
+    const btn = document.querySelector('button[onclick="buscarEndereco()"]');
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`);
+        
+        // 2. Converte a resposta para JSON
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+            // Pega o primeiro resultado encontrado
+            const resultado = data[0];
+            const lat = parseFloat(resultado.lat);
+            const lon = parseFloat(resultado.lon);
+
+            // 3. Move o mapa para o local encontrado
+            map.setView([lat, lon], 16);
+
+            // Adiciona um pino temporário para mostrar onde caiu
+            L.marker([lat, lon])
+                .addTo(map)
+                .bindPopup(`<strong>Endereço Encontrado:</strong><br>${resultado.display_name}`)
+                .openPopup();
+            
+        } else {
+            alert("Endereço não encontrado. Tente ser mais específico (Cidade, Estado).");
+        }
+
+    } catch (erro) {
+        console.error("Erro na requisição:", erro);
+        alert("Erro ao buscar endereço. Verifique sua internet.");
+    } finally {
+        // Restaura o botão
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+    }
+}
+
+// Permite apertar ENTER no input para buscar
+document.getElementById('input-endereco').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        buscarEndereco();
+    }
+});
+
+    </script>
+</body>
+</html>

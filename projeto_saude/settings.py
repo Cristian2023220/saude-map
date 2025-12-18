@@ -57,11 +57,11 @@ WSGI_APPLICATION = 'projeto_saude.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'saude_map_db',    # Nome que criamos no Passo 2
-        'USER': 'root',            # Seu usuário do MySQL (geralmente 'root')
-        'PASSWORD': '04180420',            # Sua senha (no XAMPP costuma ser vazia)
-        'HOST': '127.0.0.1',       # Localhost
-        'PORT': '3306',            # Porta padrão
+        'NAME': 'saude_map_db',    # 
+        'USER': 'root',            # 
+        'PASSWORD': '04180420',      
+        'HOST': '127.0.0.1',       # 
+        'PORT': '3306',            #
     }
 }
 

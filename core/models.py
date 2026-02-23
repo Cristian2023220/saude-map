@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+import math
 
 class PontoSaude(models.Model):
     TIPO_CHOICES = [
@@ -20,9 +21,7 @@ class PontoSaude(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6,
         validators=[MinValueValidator(-180.0), MaxValueValidator(180.0)])
 
-    # --- LÓGICA MVC ---
-    # O Model agora sabe se formatar para o Frontend.
-    # Isso limpa o Controller.
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -38,6 +37,30 @@ class PontoSaude(models.Model):
                 'medicamentos': self.medicamentos
             }
         }
+    
+    # Pega as coodenadas do usuário e calcula a distância em km
+    def calcular_distancia(self, lat_usuario, lng_usuario):
+        if not lat_usuario or not lng_usuario:
+            return None
+        
+        # Converte graus para radianos
+        lat1, lon1 = float(self.latitude), float(self.longitude)
+        lat2, lon2 = float(lat_usuario), float(lng_usuario)
+        radius = 6371  # Raio da Terra em km
+
+
+        # Fórmula de Haversine sendo aplicada para calcular a distância
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = (math.sin(dlat / 2) * math.sin(dlat / 2) +
+             math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
+             math.sin(dlon / 2) * math.sin(dlon / 2))
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+        # Distância em km
+        d = radius * c
+
+        return round(d, 2)
 
     def __str__(self):
         return self.nome

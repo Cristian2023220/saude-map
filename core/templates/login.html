@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - SaúdeMap</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 300px; text-align: center; }
+        .form-control { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .btn { background: #00aba9; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
+        .btn:hover { background: #008f8d; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2 style="color: #00aba9;">SaúdeMap</h2>
+        <p>Acesso Restrito a Contribuidores</p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" name="username" class="form-control" placeholder="Usuário" required>
+            <input type="password" name="password" class="form-control" placeholder="Senha" required>
+            <button type="submit" class="btn">Entrar</button>
+        </form>
+        
+        {% if form.errors %}
+            <p style="color: red; font-size: 0.9em; margin-top: 10px;">Usuário ou senha incorretos.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

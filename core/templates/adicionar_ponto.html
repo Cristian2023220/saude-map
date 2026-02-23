@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Adicionar Local - SaúdeMap</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { background: white; max-width: 600px; margin: 0 auto; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .form-control { width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;}
+        .btn { background: #00aba9; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Adicionar Novo Ponto de Saúde</h2>
+        <p>Logado como: <strong>{{ user.username }}</strong></p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }} <button type="submit" class="btn">Salvar no Mapa</button>
+            <a href="{% url 'mapa' %}" style="margin-left: 15px; color: #777;">Cancelar e voltar</a>
+        </form>
+    </div>
+</body>
+</html>

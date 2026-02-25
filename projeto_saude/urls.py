@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from django.contrib.auth import views as auth_views # Importa o sistema de Auth do Django
+from django.contrib.auth import views as auth_views
 from core import views
 
 urlpatterns = [

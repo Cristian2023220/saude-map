@@ -80,10 +80,7 @@
                     <i class="fas fa-plus"></i> Adicionar Local
                 </a>
                 
-                <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-weight:bold; text-decoration:underline;">Sair</button>
-                </form>
+                <a href="{% url 'logout' %}" style="color:#e74c3c; font-weight:bold; text-decoration:underline;">Sair</a>
 
             {% else %}
                 <a href="{% url 'login' %}" style="color:#555; text-decoration:none; font-weight:bold; font-size:0.9em;">

@@ -1,7 +1,20 @@
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+# 1. PRIMEIRO: Definimos onde é a raiz do projeto (BASE_DIR)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# 2. SEGUNDO: Apontamos o caminho exato do arquivo .env e forçamos a leitura
+env_path = BASE_DIR / '.env'
+load_dotenv(env_path)
+
+# 3. TERCEIRO: Agora sim pegamos as variáveis (elas não serão mais vazias/none)
+AUTH0_DOMAIN = os.getenv('AUTH0_DOMAIN')
+AUTH0_CLIENT_ID = os.getenv('AUTH0_CLIENT_ID')
+AUTH0_CLIENT_SECRET = os.getenv('AUTH0_CLIENT_SECRET')
+
+# --- O RESTO DO ARQUIVO CONTINUA IGUAL ---
 SECRET_KEY = 'django-insecure-#x6d6mtmsob7k+@y_vd#@)3_e*6#we+a5zy^+uiqi^0f01l2p*'
 
 DEBUG = True
@@ -57,10 +70,10 @@ WSGI_APPLICATION = 'projeto_saude.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'saude_map_db',    # 
-        'USER': 'root',            # 
-        'PASSWORD': '04180420',      
-        'HOST': '127.0.0.1',       # 
+        'NAME': 'saude_map_db',    #
+        'USER': 'root',            #
+        'PASSWORD': '04180420',
+        'HOST': '127.0.0.1',       #
         'PORT': '3306',            #
     }
 }
@@ -98,8 +111,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-
-# --- CONFIGURAÇÕES DE AUTENTICAÇÃO ---
-LOGIN_URL = '/login/'           # Para onde mandar quem não está logado
-LOGIN_REDIRECT_URL = '/'        # Para onde ir ao fazer login com sucesso (Home)
-LOGOUT_REDIRECT_URL = '/'       # Para onde ir ao sair

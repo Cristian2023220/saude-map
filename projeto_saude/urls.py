@@ -3,7 +3,7 @@ from django.urls import path
 from core import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('gerencia-saude-admin/', admin.site.urls),
     path('', views.mapa_view, name='mapa'),
     path('api/pontos/', views.api_pontos, name='api_pontos'),
     path('adicionar-ponto/', views.adicionar_ponto, name='adicionar_ponto'),

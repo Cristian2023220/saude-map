@@ -111,3 +111,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# --- CAMADAS DE SEGURANÇA EXTRAS ---
+
+# 1. Impede que outros sites abram o seu mapa dentro de um "iframe" (Clickjacking)
+X_FRAME_OPTIONS = 'DENY'
+
+# 2. Impede que o navegador tente "adivinhar" o tipo de um arquivo (evita ataques XSS)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# 3. Força o filtro contra scripts maliciosos (XSS) do navegador a ficar ligado
+SECURE_BROWSER_XSS_FILTER = True

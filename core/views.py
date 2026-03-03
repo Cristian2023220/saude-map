@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -7,7 +8,7 @@ from django.http import JsonResponse
 from django.db.models import Count 
 from authlib.integrations.django_client import OAuth
 from .forms import PontoSaudeForm
-from .models import PontoSaude
+from .models import Medicamento, Medico, PontoSaude, ProdutoGratuito
 
 # --- CONFIGURAÇÃO DO AUTH0 ---
 oauth = OAuth()
@@ -122,3 +123,37 @@ def auth0_logout(request):
     return_to = request.build_absolute_uri('/')
     url = f"https://{settings.AUTH0_DOMAIN}/v2/logout?client_id={settings.AUTH0_CLIENT_ID}&returnTo={return_to}"
     return redirect(url)
+
+# --- API PARA SALVAR DADOS DO PAINEL LATERAL ---
+@login_required
+def adicionar_item_painel(request, ponto_id):
+    if request.method == 'POST':
+        try:
+            dados = json.loads(request.body)
+            ponto = PontoSaude.objects.get(id=ponto_id)
+            tipo_item = dados.get('tipo_item')
+
+            if tipo_item == 'medico':
+                Medico.objects.create(
+                    ponto=ponto, 
+                    nome=dados.get('nome'), 
+                    especialidade=dados.get('especialidade')
+                )
+            elif tipo_item == 'medicamento':
+                Medicamento.objects.create(
+                    ponto=ponto, 
+                    nome=dados.get('nome'), 
+                    disponivel=(dados.get('status') == 'Disp.')
+                )
+            elif tipo_item == 'produto':
+                ProdutoGratuito.objects.create(
+                    ponto=ponto, 
+                    nome=dados.get('nome'), 
+                    disponivel=(dados.get('status') == 'Disp.')
+                )
+            
+            return JsonResponse({'status': 'sucesso'})
+        except Exception as e:
+            return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
+            
+    return JsonResponse({'status': 'invalido'}, status=405)

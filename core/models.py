@@ -26,12 +26,12 @@ class PontoSaude(models.Model):
         return {
             'id': self.id,
             'nome': self.nome,
-            'lat': self.latitude,     # <-- MUDOU AQUI (de 'latitude' para 'lat')
-            'lng': self.longitude,    # <-- MUDOU AQUI (de 'longitude' para 'lng')
+            'lat': self.latitude,
+            'lng': self.longitude,
             'tipo_sigla': self.tipo,
             'tipo_nome': self.get_tipo_display(),
             'telefone': getattr(self, 'telefone', 'Não informado'),
-            
+
             # --- LISTAS DE SERVIÇOS ---
             'medicos': [{'id': m.id, 'nome': m.nome, 'especialidade': m.especialidade} for m in self.lista_medicos.all()],
             'vacinas': [{'id': v.id, 'nome': v.nome, 'disponivel': v.disponivel} for v in self.lista_vacinas.all()],

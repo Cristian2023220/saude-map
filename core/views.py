@@ -1,11 +1,11 @@
 import json
 from django.shortcuts import render, redirect
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login as django_login, logout as django_logout
 from django.contrib.auth.models import User
-from django.http import JsonResponse 
-from django.db.models import Count 
+from django.http import JsonResponse
+from django.db.models import Count
 from authlib.integrations.django_client import OAuth
 from .forms import PontoSaudeForm
 from .models import Medicamento, Medico, PontoSaude, ProdutoGratuito
@@ -43,9 +43,9 @@ def api_pontos(request):
     filtro_tipo = request.GET.get('tipo', 'todos')
 
     # Parâmetros da Varredura (Limites da Tela)
-    ne_lat = request.GET.get('ne_lat')  # Canto Superior Direito
+    ne_lat = request.GET.get('ne_lat')
     ne_lng = request.GET.get('ne_lng')
-    sw_lat = request.GET.get('sw_lat')  # Canto Inferior Esquerdo
+    sw_lat = request.GET.get('sw_lat')
     sw_lng = request.GET.get('sw_lng')
 
     pontos = PontoSaude.objects.all()
@@ -77,12 +77,15 @@ def api_pontos(request):
         lista_pontos.append(dados)
 
     if user_lat and user_lng:
-        lista_pontos.sort(key=lambda x: x['distancia_km'] if x['distancia_km'] is not None else float('inf'))
+        lista_pontos.sort(
+            key=lambda x: x['distancia_km'] if x['distancia_km'] is not None else float('inf'))
 
     return JsonResponse(lista_pontos, safe=False)
 
 
-@login_required  # Protege essa view, só deixa acessar quem estiver logado
+# --- ÁREA DO COLABORADOR ---
+
+@user_passes_test(lambda u: u.is_staff)
 def adicionar_ponto(request):
     if request.method == 'POST':
         form = PontoSaudeForm(request.POST)
@@ -95,37 +98,7 @@ def adicionar_ponto(request):
     return render(request, 'adicionar_ponto.html', {'form': form})
 
 
-# --- NOVAS VIEWS DE LOGIN EXTERNO (AUTH0) ---
-
-def auth0_login(request):
-    redirect_uri = request.build_absolute_uri('/callback/')
-    return oauth.auth0.authorize_redirect(request, redirect_uri)
-
-
-def auth0_callback(request):
-    token = oauth.auth0.authorize_access_token(request)
-    user_info = token.get('userinfo')
-    
-    username = user_info.get('nickname') or user_info.get('name')
-    email = user_info.get('email')
-
-    user, created = User.objects.get_or_create(
-        username=username,
-        defaults={'email': email}
-    )
-    
-    django_login(request, user)
-    return redirect('mapa')
-
-
-def auth0_logout(request):
-    django_logout(request)
-    return_to = request.build_absolute_uri('/')
-    url = f"https://{settings.AUTH0_DOMAIN}/v2/logout?client_id={settings.AUTH0_CLIENT_ID}&returnTo={return_to}"
-    return redirect(url)
-
-# --- API PARA SALVAR DADOS DO PAINEL LATERAL ---
-@login_required
+@user_passes_test(lambda u: u.is_staff)
 def adicionar_item_painel(request, ponto_id):
     if request.method == 'POST':
         try:
@@ -135,25 +108,68 @@ def adicionar_item_painel(request, ponto_id):
 
             if tipo_item == 'medico':
                 Medico.objects.create(
-                    ponto=ponto, 
-                    nome=dados.get('nome'), 
+                    ponto=ponto,
+                    nome=dados.get('nome'),
                     especialidade=dados.get('especialidade')
                 )
             elif tipo_item == 'medicamento':
                 Medicamento.objects.create(
-                    ponto=ponto, 
-                    nome=dados.get('nome'), 
+                    ponto=ponto,
+                    nome=dados.get('nome'),
                     disponivel=(dados.get('status') == 'Disp.')
                 )
             elif tipo_item == 'produto':
                 ProdutoGratuito.objects.create(
-                    ponto=ponto, 
-                    nome=dados.get('nome'), 
+                    ponto=ponto,
+                    nome=dados.get('nome'),
                     disponivel=(dados.get('status') == 'Disp.')
                 )
-            
+
             return JsonResponse({'status': 'sucesso'})
         except Exception as e:
             return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
-            
+
     return JsonResponse({'status': 'invalido'}, status=405)
+
+
+# --- VIEWS DE LOGIN EXTERNO (AUTH0) ---
+
+def auth0_login(request):
+    redirect_uri = request.build_absolute_uri('/callback/')
+    return oauth.auth0.authorize_redirect(request, redirect_uri)
+
+
+def auth0_callback(request):
+    # Se o usuário clicou em "Recusar" ou houve algum erro no Auth0
+    if request.GET.get('error'):
+        # Redireciona de forma silenciosa de volta para a tela inicial
+        return redirect('mapa')
+
+    # 2. FLUXO NORMAL DE LOGIN
+    try:
+        token = oauth.auth0.authorize_access_token(request)
+        user_info = token.get('userinfo')
+
+        username = user_info.get('nickname') or user_info.get('name')
+        email = user_info.get('email')
+
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={'email': email}
+        )
+
+        django_login(request, user)
+        return redirect('mapa')
+
+    except Exception as e:
+        return redirect('mapa')
+
+    django_login(request, user)
+    return redirect('mapa')
+
+
+def auth0_logout(request):
+    django_logout(request)
+    return_to = request.build_absolute_uri('/')
+    url = f"https://{settings.AUTH0_DOMAIN}/v2/logout?client_id={settings.AUTH0_CLIENT_ID}&returnTo={return_to}"
+    return redirect(url)

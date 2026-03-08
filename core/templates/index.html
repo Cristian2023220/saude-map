@@ -91,7 +91,7 @@
                 <i class="fas fa-crosshairs"></i> Minha Localização
             </button>
             
-            {% if user.is_authenticated %}
+            {% if user.is_staff %}
                 <a href="{% url 'adicionar_ponto' %}" style="background:#2c3e50; color:white; padding:8px 15px; text-decoration:none; border-radius:20px; font-weight:bold; font-size:0.9em;">
                     <i class="fas fa-plus"></i> Adicionar Local
                 </a>
@@ -183,7 +183,7 @@
 
             <div id="area-servicos-dinamica"></div>
             
-            {% if user.is_authenticated %}
+            {% if user.is_staff %}
             <hr style="margin: 20px 0; border: 0; border-top: 1px dashed #ccc;">
             <div id="area-edicao-colaborador">
                 <h3 style="font-size: 1.1rem; color: #2563eb; margin-bottom: 15px;">
@@ -275,8 +275,7 @@
             locais.forEach(local => {
                 const icone = icons[local.tipo_sigla] || icons['POST'];
                 const distTxt = local.distancia_km ? `<b>${local.distancia_km} km</b>` : '';
-                
-                // MUDANÇA AQUI: Criamos o marcador, mas ao invés de abrir o balão, ele abre o Painel!
+
                 const m = L.marker([local.lat, local.lng], {icon: icone}).addTo(map);
                 
                 m.on('click', function() {
@@ -299,7 +298,6 @@
                         <span style="color:#e67e22; font-weight:bold;">${local.distancia_km ? local.distancia_km + ' km' : ''}</span>
                     </div>
                 `;
-                // MUDANÇA AQUI: O clique na lista também vai abrir o Painel!
                 item.onclick = () => { 
                     map.setView([local.lat, local.lng], 16); 
                     m.fire('click'); // Simula o clique no marcador

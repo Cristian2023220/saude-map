@@ -1,484 +1,153 @@
-/* --- ESTILO GLOBAL --- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+body { background: #f6f8fb; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-body {
-    background: #f6f8fb;
-}
+/* Header */
+.top-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: white; box-shadow: 0 2px 6px rgba(0,0,0,.05); z-index: 1001; }
+.logo { display: flex; gap: 10px; }
+.logo h1 { font-size: 20px; color: #2c3e50; }
+.logo small { color: #777; }
 
-/* --- CABEÇALHO SUPERIOR (Top Bar) --- */
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    background: white;
-    box-shadow: 0 2px 6px rgba(0,0,0,.05);
-}
+/* Caixas de Ícone */
+.icon-box { width: 42px; height: 42px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; background: #67a1f2; }
+.icon-box i { color: #e3eeff; font-size: 24px; }
+.icon-box.red { background: #fde2e2; }
+.icon-box.red i { color: #dc3545; }
+.icon-box.blue { background: #e5eaf6; }
+.icon-box.blue i { color: #0d5dd4; }
+.icon-box.orange { background: #ffe9ce; }
+.icon-box.orange i { color: #f09347; }
 
-.logo {
-    display: flex;
-    gap: 10px;
-}
-
-.logo h1 {
-    font-size: 20px;
-}
-
-.logo small {
-    color: #777;
-}
-
-.user-btn {
-    background: #00a8e8;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.user-btn.active-btn {
-    background: #111827; /* Cor escura do botão quando clicado */
-}
+/* Botões Globais */
+.user-btn { background: #00a8e8; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;}
+.colab-actions { display: flex; align-items: center; gap: 8px; }
+.logout-btn { background: #6b7280; }
 
 /* --- ESTATÍSTICAS E CARDS SUPERIORES --- */
 .stats {
     display: flex;
-    gap: 20px;
-    padding: 20px;
+    gap: 15px;
+    padding: 12px 24px; /* Reduz o espaço em volta dos cards */
 }
 
 .card {
     flex: 1;
     background: white;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,.05);
+    border-radius: 10px;
+    padding: 12px; /* Reduz o "recheio" do card */
+    
+    /* O truque mágico: coloca Ícone, Número e Texto lado a lado */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px; 
+    
+    box-shadow: 0 2px 6px rgba(0,0,0,.05);
 }
 
 .card h2 {
-    font-size: 28px;
+    font-size: 22px; /* Fonte um pouco menor */
+    margin: 0;
 }
 
 .card p {
     color: #666;
+    font-size: 14px;
+    margin: 0;
+    font-weight: 500;
 }
 
 /* Caixas de Ícone Gerais e Temáticas */
 .icon-box, .icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 8px; /* cantos suaves */
+    width: 38px; /* Caixinha do ícone menor */
+    height: 38px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 10px; /* centraliza no card */
-    background: #67a1f2; /* azul claro padrão */
+    margin: 0; /* Tira a margem que empurrava o texto pra baixo */
+    background: #67a1f2;
 }
 
 .icon-box i {
-    color: #e3eeff; /* azul Bootstrap padrão */
-    font-size: 26px;
+    color: #e3eeff;
+    font-size: 20px; /* Ícone interno menor */
 }
 
-/* Variações de Cor para Ícones */
-.icon-box.red, .red { background: #fde2e2; }
-.icon-box.red i { color: #dc3545; }
+/* Filtros */
+.filters { display: flex; gap: 10px; padding: 0 20px 10px; align-items: center;}
+.filters button { padding: 10px 14px; border-radius: 10px; border: 1px solid #ddd; background: white; cursor: pointer; display: flex; gap: 5px; align-items: center; }
+.filters .active { background: #111827; color: white; border-color: #111827; }
 
-.icon-box.blue, .blue { background: #e5eaf6; }
-.icon-box.blue i { color: #0d5dd4; }
+/* Switch da Varredura */
+.switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: #00aba9; }
+input:checked + .slider:before { transform: translateX(18px); }
 
-.icon-box.orange, .orange { background: #ffe9ce; }
-.icon-box.orange i { color: #f09347; }
-
-
-/* --- FILTROS --- */
-.filters {
-    display: flex;
-    gap: 10px;
-    padding: 0 20px 10px;
-}
-
-.filters button {
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    background: white;
-    cursor: pointer;
-}
-
-.filters .active {
-    background: #111827;
-    color: white;
-}
-
-/* --- MAPA E ÍCONES DO LEAFLET --- */
-#map {
-    height: calc(100vh - 300px);
-    margin: 0 20px 20px;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-/* Ícones Customizados do Mapa */
-.map-icon-hospital,
-.map-icon-posto,
-.map-icon-upa {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 2px solid #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-}
-
+/* Ícones do Mapa Leaflet */
+.map-icon-hospital, .map-icon-posto, .map-icon-upa { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
 .map-icon-hospital { background-color: #dc3545; }
 .map-icon-posto { background-color: #0d6efd; }
 .map-icon-upa { background-color: #fd7e14; }
+.map-icon-hospital i, .map-icon-posto i, .map-icon-upa i { color: #ffffff; font-size: 20px; }
 
-.map-icon-hospital i,
-.map-icon-posto i,
-.map-icon-upa i {
-    color: #ffffff;
-    font-size: 24px;
-}
+/* Mapa */
+#map-container { flex-grow: 1; margin: 0 20px 20px; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,.05); z-index: 1;}
+#map { height: 100%; width: 100%; }
 
-/* --- OVERLAYS --- */
-/* Overlay do Painel Lateral */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 9998; /* Fica atrás da sidebar (que é 9999) e acima do mapa */
-    
-    /* Escondido por padrão */
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
+/* --- SIDEBAR LATERAL --- */
+.sidebar { position: fixed; top: 0; right: -400px; width: 100%; max-width: 400px; height: 100vh; background: white; box-shadow: -4px 0 15px rgba(0,0,0,0.1); transition: right 0.3s ease-in-out; z-index: 9999; display: flex; flex-direction: column; }
+.sidebar.open { right: 0; }
+.sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #eee; background: #f6f8fb; }
+.sidebar-header button { background: none; border: none; font-size: 20px; cursor: pointer; color: #333; }
+.modo-sidebar { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+#lista-locais { list-style: none; overflow-y: auto; flex: 1; }
 
-.overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
+.local-item { padding: 16px 20px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
+.local-item:hover { background: #f0f4f8; }
+.local-item h4 { margin-bottom: 6px; font-size: 16px; color: #111827; }
+.local-item p { font-size: 14px; color: #666; margin: 0; display: flex; justify-content: space-between; }
+.distancia-badge { color: #0d6efd; font-weight: 600; }
 
-/* Overlay do Modal de Login */
-.login-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(255, 255, 255, 0.85); /* Fundo claro e embaçado */
-    backdrop-filter: blur(5px);
-    z-index: 10000; /* Fica acima de TUDO na tela */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
+.overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); z-index: 9998; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
+.overlay.active { opacity: 1; visibility: visible; }
+.button-locais { padding: 0 20px 10px; }
 
-.login-overlay.open {
-    opacity: 1;
-    visibility: visible;
-}
+/* --- DETALHES DO LOCAL NO PAINEL --- */
+.detalhes-container { overflow-y: auto; padding-bottom: 20px; }
+.local-header { padding: 20px; border-bottom: 1px solid #eee; background: #f6f8fb; display: flex; align-items: center; gap: 12px; }
+.local-header .icon-box { margin: 0; }
+.local-header-info h2 { font-size: 18px; color: #111827; margin: 0 0 4px 0; }
+.local-header-info p { font-size: 13px; color: #666; margin: 0; }
 
-/* --- PAINEL LATERAL (SIDEBAR) --- */
-.sidebar, .sidepanel {
-    position: fixed;
-    top: 0;
-    right: -400px; /* Escondida fora da tela por padrão */
+.info-section { padding: 16px 20px; border-bottom: 1px solid #eee; }
+.info-section h3 { font-size: 14px; font-weight: 600; color: #333; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; }
+.info-section h3 i { color: #667; font-size: 16px; }
+.info-item { font-size: 14px; color: #555; }
+.info-label { font-weight: 600; color: #333; }
+
+.medico-card, .vacina-item { background: white; border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;}
+.medico-info { color: #666; font-size: 13px; display: flex; flex-direction: column; gap: 2px;}
+.vacina-badge { background: #16a34a; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.vacina-badge.off { background: #dc2626; }
+
+/* Área de Edição Colaborador */
+.edit-section { display: flex; flex-direction: column; gap: 8px; }
+.btn-editar-local { border: none; border-radius: 8px; background: #198754; color: #fff; padding: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;}
+.form-editar-local { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 2px dashed #2563eb;}
+.form-editar-local input, .form-editar-local select { width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 10px; font-size: 13px; outline: none; }
+.btn-adicionar-item { background:#2563eb; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; }
+.btn-remover-item { background:none; border:none; color:#ef4444; cursor:pointer; font-size: 16px;}
+
+/* --- ESTILO DA FOTO DE FACHADA NO PAINEL --- */
+.local-foto-fachada {
     width: 100%;
-    max-width: 400px;
-    height: 100vh;
-    background: white;
-    box-shadow: -4px 0 15px rgba(0,0,0,0.1);
-    transition: right 0.3s ease-in-out;
-    z-index: 9999; /* Fica acima do mapa do Leaflet */
-    display: flex;
-    flex-direction: column;
-}
-
-/* Classe que o JS vai adicionar para mostrar a barra */
-.sidebar.open, .sidepanel.active {
-    right: 0; 
-}
-
-.sidebar-header, .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #eee;
-    background: #f6f8fb;
-}
-
-.sidebar-header button, .close-btn {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: #333;
-}
-
-/* Título do Painel */
-.panel-title {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.panel-title h2 {
-    font-size: 1.2rem;
-    margin: 0;
-    color: #1e293b;
-}
-
-.panel-title .badge {
-    background: #e0f2fe;
-    color: #0284c7;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    display: inline-block;
-    margin-top: 5px;
-}
-
-/* Conteúdo interno do painel */
-.panel-content {
-    padding: 20px;
-    overflow-y: auto;
-    flex: 1;
-}
-
-/* Itens de informação (Endereço, Telefone) */
-.info-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.info-item i {
-    color: #2563eb;
-    font-size: 1.2rem;
-    margin-top: 2px;
-}
-
-.info-text strong {
-    font-size: 0.9rem;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.info-text span {
-    font-size: 1rem;
-    color: #334155;
-    margin-top: 5px;
+    max-height: 300px;      /* Evita que fotos verticais fiquem gigantes na tela */
+    height: auto;           /* Deixa a altura se ajustar naturalmente à foto */
+    object-fit: contain;    /* Mostra a foto inteira sem cortar nada */
+    background-color: #f1f5f9; /* Fundo cinza claro caso a foto não preencha tudo */
     display: block;
-}
-
-/* Títulos de seção do painel */
-.section-title {
-    font-weight: bold;
-    font-size: 1.1rem;
-    color: #1e293b;
-    margin: 25px 0 15px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #f1f5f9;
-}
-
-/* Elementos da lista (Farmácia e Posto) */
-.card-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-    color: #475569;
-}
-
-.status .ok {
-    color: #16a34a;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.status .off {
-    color: #dc2626;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-/* Listagem lateral original */
-#lista-locais {
-    list-style: none;
-    overflow-y: auto;
-    flex: 1;
-}
-
-.local-item {
-    padding: 16px 20px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.local-item:hover {
-    background: #f0f4f8;
-}
-
-.local-item h4 {
-    margin-bottom: 6px;
-    font-size: 16px;
-    color: #111827;
-}
-
-.local-item p {
-    font-size: 14px;
-    color: #666;
-    margin: 0;
-    display: flex;
-    justify-content: space-between;
-}
-
-.distancia-badge {
-    color: #0d6efd;
-    font-weight: 600;
-}
-
-
-/* --- MODAL DE LOGIN E FORMULÁRIOS --- */
-.login-modal {
-    background: white;
-    width: 100%;
-    max-width: 400px;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-    position: relative;
-    transform: translateY(-20px);
-    transition: transform 0.3s ease;
-}
-
-.login-overlay.open .login-modal {
-    transform: translateY(0);
-}
-
-.btn-close-login {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 20px;
-    color: #999;
-    cursor: pointer;
-}
-
-.login-header {
-    text-align: center;
-    margin-bottom: 25px;
-}
-
-.login-header h2 {
-    font-size: 24px;
-    color: #111827;
-}
-
-.login-header p {
-    color: #666;
-    font-size: 14px;
-}
-
-.input-group {
-    margin-bottom: 15px;
-}
-
-.input-group label {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: #333;
-}
-
-.input-group input, 
-#doencaSelect, 
-#produtoSelect {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.input-group input:focus,
-#doencaSelect:focus, 
-#produtoSelect:focus {
-    border-color: #0d6efd;
-}
-
-.input-group input.input-error {
-    border-color: #dc3545;
-    background-color: #fff8f8;
-}
-
-.error-msg {
-    display: block;
-    color: #dc3545;
-    font-size: 12px;
-    margin-top: 4px;
-    min-height: 14px;
-}
-
-.mensagem-servidor {
-    text-align: center;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 15px;
-    min-height: 20px;
-}
-
-.msg-success { color: #198754; }
-.msg-error { color: #dc3545; }
-
-.btn-submit {
-    width: 100%;
-    padding: 14px;
-    background: #111827;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.btn-submit:hover { background: #1f2937; }
-
-/* Botões Extras */
-.button-locais {
-    padding: 0 20px 10px;
+    border-bottom: 3px solid #e2e8f0;
 }

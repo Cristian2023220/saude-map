@@ -15,7 +15,7 @@
         <h2>Adicionar Novo Ponto de Saúde</h2>
         <p>Logado como: <strong>{{ user.username }}</strong></p>
         
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }} <button type="submit" class="btn">Salvar no Mapa</button>
             <a href="{% url 'mapa' %}" style="margin-left: 15px; color: #777;">Cancelar e voltar</a>

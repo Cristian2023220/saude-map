@@ -2,348 +2,117 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SaúdeMap - Varredura Automática</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/painel.css' %}">
-
-    <style>
-        :root { --primary-color: #00aba9; --bg-light: #f0f2f5; --text-dark: #333; }
-        body, html { height: 100%; margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-light); display: flex; flex-direction: column; overflow: hidden; }
-
-        /* Header */
-        .main-header { background: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 1001; }
-        .brand { display: flex; align-items: center; gap: 10px; }
-        .brand h1 { margin: 0; font-size: 1.4rem; color: #2c3e50; }
-        
-        .btn-location { background: var(--primary-color); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; gap: 5px; align-items: center;}
-
-        /* Container Principal */
-        .main-container { flex-grow: 1; display: flex; flex-direction: column; padding: 15px; gap: 15px; position: relative; overflow: hidden; }
-
-        /* Controles (Scanner + Filtros) */
-        .controls-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
-        
-        /* Toggle Switch da Varredura */
-        .scan-toggle { display: flex; align-items: center; gap: 10px; background: white; padding: 5px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary-color); }
-        input:checked + .slider:before { transform: translateX(18px); }
-
-        /* Filtros */
-        .filters-bar { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
-        .filter-btn { background: white; border: 1px solid #ddd; padding: 6px 12px; border-radius: 15px; cursor: pointer; white-space: nowrap; }
-        .filter-btn.active { background: #2c3e50; color: white; border-color: #2c3e50; }
-
-        /* Layout Mapa + Lista */
-        .content-area { display: flex; gap: 15px; flex-grow: 1; min-height: 0; overflow: hidden; }
-        
-        #lista-locais { 
-            flex: 0 0 320px;
-            max-width: 320px;
-            background: white; 
-            border-radius: 10px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; 
-        }
-        .lista-header { padding: 15px; border-bottom: 1px solid #eee; font-weight: bold; color: var(--primary-color); display: flex; justify-content: space-between; align-items: center;}
-        
-        #map-container { flex-grow: 1; border-radius: 10px; overflow: hidden; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        #map { width: 100%; height: 100%; }
-
-        /* Loading Overlay no Mapa */
-        #map-loader {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.9); padding: 5px 15px;
-            border-radius: 20px; font-size: 0.85em; font-weight: bold; color: #555;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000; display: none;
-        }
-
-        /* Items da lista */
-        .lista-item { 
-            padding: 8px 12px; 
-            border-bottom: 1px solid #f9f9f9; 
-            cursor: pointer; 
-        }
-        .lista-item:hover { background: #f0f8ff; }
-
-        @media (max-width: 768px) {
-            .content-area { flex-direction: column-reverse; }
-            #lista-locais { width: 100%; height: 30%; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaúdeMap - Varredura Automática</title>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+  
+  <link rel="stylesheet" href="{% static 'css/painel.css' %}">
 </head>
 <body>
 
-    <header class="main-header">
-        <div class="user-actions" style="display: flex; gap: 10px; align-items: center;">
-            <button class="btn-location" onclick="getUserLocation()">
-                <i class="fas fa-crosshairs"></i> Minha Localização
-            </button>
-            
-            {% if user.is_staff %}
-                <a href="{% url 'adicionar_ponto' %}" style="background:#2c3e50; color:white; padding:8px 15px; text-decoration:none; border-radius:20px; font-weight:bold; font-size:0.9em;">
-                    <i class="fas fa-plus"></i> Adicionar Local
-                </a>
-                
-                <a href="{% url 'logout' %}" style="color:#e74c3c; font-weight:bold; text-decoration:underline;">Sair</a>
-
-            {% else %}
-                <a href="{% url 'login' %}" style="color:#555; text-decoration:none; font-weight:bold; font-size:0.9em;">
-                    <i class="fas fa-sign-in-alt"></i> Sou Contribuidor
-                </a>
-            {% endif %}
-        </div>
-        <div class="brand">
-            <i class="fas fa-heart-pulse" style="color:#00aba9; font-size:1.5rem;"></i>
-            <h1>SaúdeMap</h1>
-        </div>
-    </header>
-
-    <main class="main-container">
-        
-        <div class="controls-row">
-            <div class="scan-toggle">
-                <span style="font-size:0.9em; font-weight:600; color:#555;">Varredura Automática</span>
-                <label class="switch">
-                    <input type="checkbox" id="check-scan" checked onchange="toggleScan()">
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="filters-bar">
-                <button class="filter-btn active" onclick="filtrar('todos', this)">Todos</button>
-                <button class="filter-btn" onclick="filtrar('HOSP', this)">Hospitais</button>
-                <button class="filter-btn" onclick="filtrar('FARM', this)">Farmácias</button>
-                <button class="filter-btn" onclick="filtrar('POST', this)">Postos</button>
-            </div>
-        </div>
-
-        <section class="content-area">
-            <div id="lista-locais">
-                <div class="lista-header">
-                    <span>Resultados na Tela</span>
-                    <span id="contador-locais" style="background:#eee; padding:2px 8px; border-radius:10px; font-size:0.8em;">0</span>
-                </div>
-                <div id="lista-conteudo"></div>
-            </div>
-
-            <div id="map-container">
-                <div id="map-loader"><i class="fas fa-spinner fa-spin"></i> Buscando na área...</div>
-                <div id="map"></div>
-            </div>
-        </section>
-
-    </main>
-
-    <div class="overlay" id="overlay" onclick="fecharPanel()"></div>
-
-    <div class="sidepanel" id="sidepanel">
-        <div class="panel-header">
-            <div class="panel-title">
-                <div class="icon-circle">
-                    <i class="bi bi-geo-alt-fill"></i>
-                </div>
-                <div>
-                    <h2 id="painel-nome">Nome do Local</h2>
-                    <div class="badge" id="painel-tipo">Tipo</div>
-                </div>
-            </div>
-            <button class="close-btn" onclick="fecharPanel()">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
-
-        <div class="panel-content">
-            <div class="info-item">
-                <i class="bi bi-geo-alt"></i>
-                <div class="info-text">
-                    <strong>Endereço / Coordenadas</strong><br>
-                    <span id="painel-endereco">Buscando endereço...</span>
-                </div>
-            </div>
-
-            <div class="info-item">
-                <i class="bi bi-telephone"></i>
-                <div class="info-text">
-                    <strong>Telefone</strong><br>
-                    <span id="painel-telefone">(00) 0000-0000</span>
-                </div>
-            </div>
-
-            <div id="area-servicos-dinamica"></div>
-            
-            {% if user.is_staff %}
-            <hr style="margin: 20px 0; border: 0; border-top: 1px dashed #ccc;">
-            <div id="area-edicao-colaborador">
-                <h3 style="font-size: 1.1rem; color: #2563eb; margin-bottom: 15px;">
-                    <i class="bi bi-pencil-square"></i> Área do Colaborador
-                </h3>
-                <p style="font-size: 13px; color: #666;">Use esta área para gerenciar os médicos e o estoque da unidade selecionada.</p>
-                <button class="btn" onclick="abrirModoEdicao()" style="background:#198754; color:white; width:100%; border:none; padding:12px; border-radius:5px; font-weight:bold; cursor:pointer;">
-                    Editar Informações
-                </button>
-            </div>
-            
-            <div id="modo-edicao-container" style="display: none; margin-top: 15px; padding: 15px; background: #f8fafc; border: 2px dashed #2563eb; border-radius: 8px;"></div>
-            {% endif %}
-            
-        </div>
+  <header class="top-bar">
+    <div class="logo">
+      <span class="icon-box"><i class="bi bi-geo-alt-fill"></i></span>
+      <div>
+        <h1>SaúdeMap</h1>
+        <small>Encontre serviços de saúde</small>
+      </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <div class="colab-actions">
+      {% if user.is_staff %}
+        <span class="user-btn" style="background: #198754; color: white;"><i class="bi bi-person-check-fill"></i> {{ user.username }}</span>
+        <a href="{% url 'adicionar_ponto' %}" class="user-btn" style="background:#2c3e50;"><i class="bi bi-plus-lg"></i> Adicionar Local</a>
+        <a href="{% url 'logout' %}" class="user-btn logout-btn"><i class="bi bi-box-arrow-right"></i> Sair</a>
+      {% else %}
+        <a href="{% url 'login' %}" class="user-btn"><i class="bi bi-person-badge-fill"></i> Sou Colaborador</a>
+      {% endif %}
+    </div>
+  </header>
 
-    <script>
-        // --- 1. Inicialização ---
-        const map = L.map('map').setView([-15.2493, -40.2476], 14);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19
-        }).addTo(map);
+  <section class="stats">
+    <div class="card">
+      <div class="icon-box red"><i class="bi bi-hospital"></i></div>
+      <h2>{{ total_hospitais }}</h2><p>Hospitais</p>
+    </div>
+    <div class="card">
+      <div class="icon-box blue"><i class="bi bi-capsule"></i></div>
+      <h2>{{ total_farmacias }}</h2><p>Farmácias</p>
+    </div>
+    <div class="card">
+      <div class="icon-box orange"><i class="bi bi-buildings"></i></div>
+      <h2>{{ total_postos }}</h2><p>Postos e UPAs</p>
+    </div>
+  </section>
 
-        // Ícones
-        const iconBase = (color) => L.icon({
-            iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-        });
-        const icons = { 'HOSP': iconBase('red'), 'FARM': iconBase('green'), 'POST': iconBase('blue'), 'user': iconBase('gold') };
+  <section class="filters">
+    <div class="search-container" style="position: relative; flex-grow: 1; max-width: 300px;">
+        <i class="bi bi-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; z-index: 10;"></i>
+        <input type="text" id="input-busca" placeholder="Pesquisar por nome..." onkeyup="filtrarPorNome()"
+               style="width: 100%; padding: 10px 10px 10px 38px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+    </div>
 
-        // Variáveis Globais
-        let markers = [];
-        let userPos = { lat: null, lng: null };
-        let userMarker = null;
-        let filtroTipo = 'todos';
-        let isScanActive = true; 
-        let debounceTimer;
+    <button class="active filter-btn" onclick="filtrar('todos', this)"><i class="bi bi-geo-alt"></i> Todos</button>
+    <button class="filter-btn" onclick="filtrar('HOSP', this)"><i class="bi bi-hospital"></i> Hospitais</button>
+    <button class="filter-btn" onclick="filtrar('FARM', this)"><i class="bi bi-capsule"></i> Farmácias</button>
+    <button class="filter-btn" onclick="filtrar('POST', this)"><i class="bi bi-buildings"></i> Postos</button>
+    
+    <button id="btn-location" class="filter-btn" onclick="getUserLocation()" style="background: #e5eaf6; color: #0d5dd4; border: none; font-weight: bold;">
+        <i class="bi bi-send-fill"></i> Minha Local
+    </button>
+    
+    <button id="btn-limpar-rota" class="filter-btn" onclick="limparRota()" style="display:none; background: #fee2e2; color: #dc2626; border: none; font-weight: bold;">
+        <i class="bi bi-x-circle-fill"></i> Limpar Rota
+    </button>
 
-        // --- 2. Função Principal: Carregar Pontos (Com Varredura) ---
-        async function carregarPontos() {
-            document.getElementById('map-loader').style.display = 'block';
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+        <span style="font-size:0.9em; font-weight:600; color:#555;">Varredura</span>
+        <label class="switch">
+            <input type="checkbox" id="check-scan" checked onchange="toggleScan()">
+            <span class="slider"></span>
+        </label>
+    </div>
+  </section>
 
-            try {
-                let url = `/api/pontos/?tipo=${filtroTipo}`;
+  <div class="button-locais">
+    <button id="btn-toggle-list" class="user-btn" style="background: #2c3e50;" onclick="abrirSidebar('lista')">
+        <i class="bi bi-list-ul"></i> Ver Locais na Tela (<span id="contador-locais">0</span>)
+    </button>
+  </div>
 
-                if (isScanActive) {
-                    const bounds = map.getBounds();
-                    url += `&ne_lat=${bounds.getNorthEast().lat}`;
-                    url += `&ne_lng=${bounds.getNorthEast().lng}`;
-                    url += `&sw_lat=${bounds.getSouthWest().lat}`;
-                    url += `&sw_lng=${bounds.getSouthWest().lng}`;
-                }
+  <div id="map-container">
+      <div id="map-loader" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.9); padding: 5px 15px; border-radius: 20px; font-weight: bold; color: #555; z-index: 1000; display: none;">Buscando...</div>
+      <div id="map"></div>
+  </div>
 
-                if (userPos.lat) {
-                    url += `&lat=${userPos.lat}&lng=${userPos.lng}`;
-                }
+  <div id="overlay" class="overlay" onclick="fecharSidebar()"></div>
 
-                const response = await fetch(url);
-                const dados = await response.json();
-                
-                renderizar(dados);
+  <aside id="sidebar-locais" class="sidebar">
+    <div class="sidebar-header">
+      <h3 id="sidebar-titulo">Locais Próximos</h3>
+      <button onclick="fecharSidebar()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    
+    <div id="modo-lista" class="modo-sidebar">
+      <ul id="lista-locais"></ul>
+    </div>
 
-            } catch (e) {
-                console.error("Erro varredura:", e);
-            } finally {
-                document.getElementById('map-loader').style.display = 'none';
-            }
-        }
+    <div id="modo-detalhes" class="modo-sidebar" style="display: none;">
+      <div id="detalhes-local" class="detalhes-container"></div>
+    </div>
+  </aside>
 
-        // --- 3. Renderizar na Tela e Conectar o Painel ---
-        function renderizar(locais) {
-            markers.forEach(m => map.removeLayer(m));
-            markers = [];
-            
-            const lista = document.getElementById('lista-conteudo');
-            lista.innerHTML = '';
-            document.getElementById('contador-locais').innerText = locais.length;
-
-            if (locais.length === 0) {
-                lista.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">Nenhum local nesta área.</p>';
-                return;
-            }
-
-            locais.forEach(local => {
-                const icone = icons[local.tipo_sigla] || icons['POST'];
-                const distTxt = local.distancia_km ? `<b>${local.distancia_km} km</b>` : '';
-
-                const m = L.marker([local.lat, local.lng], {icon: icone}).addTo(map);
-                
-                m.on('click', function() {
-                    document.getElementById('painel-nome').innerText = local.nome;
-                    document.getElementById('painel-tipo').innerText = local.tipo_nome;
-                    document.getElementById('painel-telefone').innerText = local.telefone || "Não informado";
-                    document.getElementById('painel-endereco').innerText = `Lat: ${local.lat}, Lng: ${local.lng}`;
-                    abrirPanel(local);
-                });
-
-                markers.push(m);
-
-                // Adiciona na Lista Lateral
-                const item = document.createElement('div');
-                item.className = 'lista-item';
-                item.innerHTML = `
-                    <div style="font-weight:bold; color:#333;">${local.nome}</div>
-                    <div style="font-size:0.85em; color:#666; display:flex; justify-content:space-between;">
-                        <span>${local.tipo_nome}</span>
-                        <span style="color:#e67e22; font-weight:bold;">${local.distancia_km ? local.distancia_km + ' km' : ''}</span>
-                    </div>
-                `;
-                item.onclick = () => { 
-                    map.setView([local.lat, local.lng], 16); 
-                    m.fire('click'); // Simula o clique no marcador
-                };
-                lista.appendChild(item);
-            });
-        }
-
-        // --- 4. Eventos de Varredura Automática ---
-        map.on('moveend', () => {
-            if (isScanActive) {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    carregarPontos();
-                }, 300);
-            }
-        });
-
-        function toggleScan() {
-            isScanActive = document.getElementById('check-scan').checked;
-            carregarPontos();
-        }
-
-        window.filtrar = function(tipo, btn) {
-            filtroTipo = tipo;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            carregarPontos();
-        }
-
-        function getUserLocation() {
-            if(navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    userPos.lat = pos.coords.latitude;
-                    userPos.lng = pos.coords.longitude;
-
-                    if(userMarker) map.removeLayer(userMarker);
-                    userMarker = L.marker([userPos.lat, userPos.lng], {icon: icons['user']}).addTo(map).bindPopup("Você").openPopup();
-                    
-                    map.setView([userPos.lat, userPos.lng], 15);
-                });
-            }
-        }
-
-        carregarPontos();
-    </script>
-    <script src="{% static 'js/painel.js' %}"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+  
+  <script>
+      const isUserStaff = "{% if user.is_staff %}true{% else %}false{% endif %}" === "true";
+  </script>
+  
+  <script src="{% static 'js/painel.js' %}"></script>
 </body>
 </html>

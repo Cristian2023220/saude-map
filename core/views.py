@@ -85,8 +85,18 @@ def api_pontos(request):
 
 # --- ÁREA DO COLABORADOR ---
 
-@user_passes_test(lambda u: u.is_staff)
+
+@user_passes_test(lambda u: u.is_staff) 
 def adicionar_ponto(request):
+    if request.method == 'POST':
+        form = PontoSaudeForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('mapa')
+    else:
+        form = PontoSaudeForm()
+
+    return render(request, 'adicionar_ponto.html', {'form': form})
     if request.method == 'POST':
         form = PontoSaudeForm(request.POST)
         if form.is_valid():

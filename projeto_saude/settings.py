@@ -22,7 +22,6 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 STATIC_URL = 'static/'
-import os
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'core', 'static'),
 ]
@@ -116,6 +115,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Configuração para arquivos de mídia (Uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # --- CAMADAS DE SEGURANÇA EXTRAS ---
 

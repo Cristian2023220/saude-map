@@ -1,3 +1,4 @@
+// --- VARIÁVEIS GLOBAIS ---
 let markers = [];
 let userPos = { lat: null, lng: null };
 let userMarker = null;
@@ -13,20 +14,16 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
     attribution: '© OpenStreetMap' 
 }).addTo(map);
 
-// Ícones Customizados
 function gerarIconeMarcador(tipo) {
     let iconClass = 'map-icon-posto'; 
     let iconBi = 'bi-buildings';
     
     if (tipo === 'HOSP') { 
-        iconClass = 'map-icon-hospital'; 
-        iconBi = 'bi-hospital'; 
+        iconClass = 'map-icon-hospital'; iconBi = 'bi-hospital'; 
     } else if (tipo === 'FARM') { 
-        iconClass = 'map-icon-posto blue'; // Mantém a classe base E adiciona a cor
-        iconBi = 'bi-capsule'; 
-    } else if (tipo === 'UPA') { 
-        iconClass = 'map-icon-upa'; 
-        iconBi = 'bi-building'; 
+        iconClass = 'map-icon-posto blue'; iconBi = 'bi-capsule'; 
+    } else if (tipo === 'UPA' || tipo === 'POST') { 
+        iconClass = 'map-icon-upa'; iconBi = 'bi-building'; 
     }
     
     return L.divIcon({
@@ -66,7 +63,7 @@ function renderizarNoMapaELista(locais) {
     markers = [];
     
     const listaContainer = document.getElementById('lista-locais');
-    listaContainer.innerHTML = '';
+    if (listaContainer) listaContainer.innerHTML = '';
     
     const contador = document.getElementById('contador-locais');
     if (contador) contador.innerText = locais.length;
@@ -77,8 +74,6 @@ function renderizarNoMapaELista(locais) {
         }).addTo(map);
         
         marker.on('click', () => abrirDetalhesLocal(local));
-        
-        // AGORA GUARDAMOS O NOME PARA A BUSCA FILTRAR O MAPA DEPOIS:
         markers.push({ 
             id: local.id, 
             marker: marker, 
@@ -102,11 +97,11 @@ function renderizarNoMapaELista(locais) {
             map.setView([local.lat, local.lng], 16); 
             abrirDetalhesLocal(local); 
         };
-        listaContainer.appendChild(li);
+        if (listaContainer) listaContainer.appendChild(li);
     });
 }
 
-// --- 3. CONTROLES E EVENTOS DO MAPA ---
+// --- 3. CONTROLES DO MAPA ---
 map.on('moveend', () => { 
     if (isScanActive) { 
         clearTimeout(debounceTimer); 
@@ -131,13 +126,10 @@ window.getUserLocation = function() {
         navigator.geolocation.getCurrentPosition(pos => {
             userPos.lat = pos.coords.latitude; 
             userPos.lng = pos.coords.longitude;
-            
             if(userMarker) map.removeLayer(userMarker);
-            userMarker = L.marker([userPos.lat, userPos.lng]).addTo(map).bindPopup("Você está aqui").openPopup();
+            userMarker = L.marker([userPos.lat, userPos.lng]).addTo(map).bindPopup("Você").openPopup();
             map.flyTo([userPos.lat, userPos.lng], 15);
-            
-            // Recarrega pontos para calcular distância
-            carregarPontos();
+            carregarPontos(); // Recarrega para calcular distâncias
         });
     }
 };
@@ -149,18 +141,13 @@ const overlay = document.getElementById('overlay');
 window.abrirSidebar = function(modo = 'lista') {
     sidebar.classList.add('open'); 
     overlay.classList.add('active');
-    
-    const modoLista = document.getElementById('modo-lista');
-    const modoDetalhes = document.getElementById('modo-detalhes');
-    const titulo = document.getElementById('sidebar-titulo');
-
     if(modo === 'lista') {
-        if(modoLista) modoLista.style.display = 'block';
-        if(modoDetalhes) modoDetalhes.style.display = 'none';
-        if(titulo) titulo.textContent = 'Resultados da Tela';
+        document.getElementById('modo-lista').style.display = 'block';
+        document.getElementById('modo-detalhes').style.display = 'none';
+        document.getElementById('sidebar-titulo').textContent = 'Resultados da Tela';
     } else {
-        if(modoLista) modoLista.style.display = 'none';
-        if(modoDetalhes) modoDetalhes.style.display = 'flex';
+        document.getElementById('modo-lista').style.display = 'none';
+        document.getElementById('modo-detalhes').style.display = 'flex';
     }
 };
 
@@ -172,13 +159,13 @@ window.fecharSidebar = function() {
 function abrirDetalhesLocal(local) {
     localSelecionado = local;
     let cor = 'blue'; let icone = 'bi-buildings';
-    
     if(local.tipo_sigla === 'HOSP') { cor = 'red'; icone = 'bi-hospital'; }
     else if(local.tipo_sigla === 'UPA') { cor = 'orange'; icone = 'bi-building'; }
     else if(local.tipo_sigla === 'FARM') { cor = 'blue'; icone = 'bi-capsule'; }
 
     let htmlFoto = local.foto_url ? `<img src="${local.foto_url}" alt="Fachada" class="local-foto-fachada">` : '';
 
+    // 1. Começamos a montar o HTML básico (que todos veem)
     let html = `
         ${htmlFoto}
         <div class="local-header">
@@ -188,8 +175,8 @@ function abrirDetalhesLocal(local) {
         <div class="info-section">
             <h3><i class="bi bi-geo-alt"></i> Endereço</h3>
             <div class="info-item" id="endereco-texto"><i class="bi bi-hourglass-split"></i> Buscando...</div>
-            <button onclick="tracarRota(${local.lat}, ${local.lng})" class="user-btn btn-rota">
-                <i class="bi bi-sign-turn-right-fill"></i> Traçar Rota até aqui
+            <button onclick="tracarRota(${local.lat}, ${local.lng})" class="user-btn" style="margin-top:10px; background:#0284c7; width:100%; justify-content:center;">
+                <i class="bi bi-sign-turn-right-fill"></i> Traçar Rota
             </button>
         </div>
         <div class="info-section">
@@ -197,39 +184,31 @@ function abrirDetalhesLocal(local) {
             <div class="info-item">${local.telefone || "Não informado"}</div>
         </div>
     `;
-
-    // Itens Dinâmicos (Medicamentos ou Médicos)
-    if(local.tipo_sigla === 'FARM') {
-        html += `<div class="info-section"><h3><i class="bi bi-capsule-pill"></i> Medicamentos</h3><div id="lista-meds">`;
-        (local.medicamentos || []).forEach(m => {
-            let badge = m.disponivel ? `<span class="vacina-badge">Disp.</span>` : `<span class="vacina-badge off">Falta</span>`;
-            html += `<div class="vacina-item"><span>${m.nome}</span> ${badge}</div>`;
-        });
-        html += `</div></div>`;
-    } else {
-        html += `<div class="info-section"><h3><i class="bi bi-person-badge"></i> Médicos</h3><div id="lista-medicos">`;
-        (local.medicos || []).forEach(m => {
-            html += `<div class="medico-card"><strong>${m.nome}</strong><span>${m.especialidade}</span></div>`;
-        });
-        html += `</div></div>`;
-    }
-
-    // Painel do Colaborador
-    if(typeof isUserStaff !== 'undefined' && isUserStaff) {
+    // Verificamos a variável que criamos lá no index.html
+    if (window.isUserStaff) {
         html += `
-            <div class="info-section edit-section">
-                <button onclick="document.getElementById('form-edicao').style.display='block'; this.style.display='none'" class="btn-editar-local">Painel do Colaborador</button>
-                <div id="form-edicao" style="display: none; margin-top:10px;">
-                    <input type="text" id="novo-item-nome" class="form-control" placeholder="Nome do item">
-                    <button onclick="salvarItem('${local.tipo_sigla === 'FARM' ? 'medicamento' : 'medico'}')" class="btn-adicionar-item">Adicionar</button>
-                </div>
-            </div>`;
+        <div class="info-section edit-section" style="margin-top: 20px; border-top: 2px solid #f0f2f5; padding-top: 15px;">
+            <button onclick="document.getElementById('form-edicao').style.display='block'; this.style.display='none'" class="user-btn" style="background: #198754; width: 100%; justify-content: center; gap: 8px;">
+                <i class="bi bi-pencil-square"></i> Painel do Colaborador
+            </button>
+            
+            <div id="form-edicao" style="display: none; margin-top:15px; background: #f8fafc; padding: 15px; border-radius: 8px;">
+                <label style="font-weight:bold; display:block; margin-bottom:8px; color: #334155;">Cadastrar Informação</label>
+                <input type="text" id="novo-item-nome" class="form-control" placeholder="Nome do médico ou remédio" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:5px; margin-bottom:10px;">
+                
+                <button onclick="salvarItem('${local.tipo_sigla === 'FARM' ? 'medicamento' : 'medico'}')" class="user-btn" style="width:100%; background:#2c3e50; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">
+                    <i class="bi bi-plus-lg"></i> Adicionar ao Banco
+                </button>
+            </div>
+        </div>`;
     }
-
     document.getElementById('detalhes-local').innerHTML = html;
+    const tituloSidebar = document.getElementById('sidebar-titulo');
+    if (tituloSidebar) tituloSidebar.textContent = 'Detalhes do Local';
+
     abrirSidebar('detalhes');
 
-    // Busca de Endereço Real
+    // 4. Busca o endereço real via API
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${local.lat}&lon=${local.lng}`)
         .then(r => r.json())
         .then(data => {
@@ -237,29 +216,60 @@ function abrirDetalhesLocal(local) {
             const texto = (addr.road || addr.pedestrian || "") + (addr.suburb ? ", " + addr.suburb : "");
             document.getElementById('endereco-texto').innerText = texto || data.display_name;
         })
-        .catch(() => {
-            document.getElementById('endereco-texto').innerText = `Lat: ${local.lat}, Lng: ${local.lng}`;
-        });
+        .catch(() => document.getElementById('endereco-texto').innerText = `Lat: ${local.lat}, Lng: ${local.lng}`);
 }
 
-// --- 5. LÓGICA DE ROTAS E BUSCA ---
+
+
+// --- 5. LÓGICA DE ROTAS E BUSCA (Blindada) ---
 window.tracarRota = function(latDestino, lngDestino) {
-    if (!userPos.lat) return alert("Ative sua localização primeiro!");
-    if (window.controleRota) map.removeControl(window.controleRota);
+    // 1. Verificação de segurança
+    if (!userPos.lat || !userPos.lng) {
+        alert("Por favor, clique em 'Minha Localização' primeiro!");
+        return;
+    }
+
+    // 2. LIMPEZA AGRESSIVA (Evita duplicidade)
+    // Remove o objeto do mapa se ele existir
+    if (window.controleRota) {
+        try {
+            map.removeControl(window.controleRota);
+        } catch (e) { console.log("Controle já removido"); }
+        window.controleRota = null;
+    }
+
+    // Remove qualquer caixa de texto órfã que tenha sobrado no HTML
+    document.querySelectorAll('.leaflet-routing-container').forEach(container => {
+        container.remove();
+    });
 
     fecharSidebar();
 
+    // 3. CRIAÇÃO DA NOVA ROTA
     try {
         window.controleRota = L.Routing.control({
-            waypoints: [L.latLng(userPos.lat, userPos.lng), L.latLng(latDestino, lngDestino)],
+            waypoints: [
+                L.latLng(parseFloat(userPos.lat), parseFloat(userPos.lng)), 
+                L.latLng(parseFloat(latDestino), parseFloat(lngDestino))
+            ],
+            lineOptions: {
+                styles: [{color: '#0284c7', opacity: 0.8, weight: 6}]
+            },
+            addWaypoints: false,
+            draggableWaypoints: false,
             routeWhileDragging: false,
+            show: true,
             collapsible: true,
-            language: 'pt',
-            lineOptions: { styles: [{color: '#0284c7', opacity: 0.8, weight: 6}] },
-            createMarker: () => null
+            createMarker: function() { return null; }
         }).addTo(map);
-        document.getElementById('btn-limpar-rota').style.display = 'inline-flex';
-    } catch (e) { console.error(e); }
+
+        // Mostra o botão de limpar
+        const btnLimpar = document.getElementById('btn-limpar-rota');
+        if (btnLimpar) btnLimpar.style.display = 'inline-flex';
+
+    } catch (erro) {
+        console.error("Erro ao traçar rota:", erro);
+    }
 };
 
 window.limparRota = function() {
@@ -268,18 +278,11 @@ window.limparRota = function() {
 };
 
 window.filtrarPorNome = function() {
-    // Normaliza o termo de busca (tira acentos e deixa minúsculo)
     const termo = document.getElementById('input-busca').value
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, ""); 
+        .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     
-    // 1. Filtra os marcadores no mapa
     markers.forEach(m => {
-        const nomeNormalizado = m.nome
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "");
-
+        const nomeNormalizado = m.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         if (nomeNormalizado.includes(termo)) {
             if (!map.hasLayer(m.marker)) m.marker.addTo(map);
         } else {
@@ -287,19 +290,12 @@ window.filtrarPorNome = function() {
         }
     });
 
-    // 2. Filtra a lista lateral
     const itens = document.querySelectorAll('#lista-locais li');
     itens.forEach(item => {
-        const nomeElemento = item.querySelector('strong');
-        if (nomeElemento) {
-            const nomeNormalizado = nomeElemento.innerText
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "");
-            item.style.display = nomeNormalizado.includes(termo) ? "flex" : "none";
-        }
+        const nome = item.querySelector('strong').innerText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        item.style.display = nome.includes(termo) ? "flex" : "none";
     });
 };
 
-// Inicia a aplicação
+// Iniciar
 carregarPontos();

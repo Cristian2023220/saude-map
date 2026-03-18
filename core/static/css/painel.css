@@ -102,7 +102,19 @@ input:checked + .slider:before { transform: translateX(18px); }
 .sidebar.open { right: 0; }
 .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #eee; background: #f6f8fb; }
 .sidebar-header button { background: none; border: none; font-size: 20px; cursor: pointer; color: #333; }
-.modo-sidebar { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.modo-sidebar { 
+    display: flex; 
+    flex-direction: column; 
+    flex: 1; 
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#lista-locais { 
+    list-style: none; 
+    overflow-y: auto; 
+    flex: 1; 
+}
 #lista-locais { list-style: none; overflow-y: auto; flex: 1; }
 
 .local-item { padding: 16px 20px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
@@ -150,4 +162,21 @@ input:checked + .slider:before { transform: translateX(18px); }
     background-color: #f1f5f9; /* Fundo cinza claro caso a foto não preencha tudo */
     display: block;
     border-bottom: 3px solid #e2e8f0;
+}
+
+/* Isso garante que a caixa de rotas não fique minúscula */
+.leaflet-routing-container {
+    width: 320px !important;
+    min-height: 50px;
+    background: white !important;
+    padding: 15px !important;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    margin: 10px !important;
+}
+
+/* Esconde o excesso de texto se a caixa bugar */
+.leaflet-routing-alt {
+    max-height: 300px;
+    overflow-y: auto;
 }

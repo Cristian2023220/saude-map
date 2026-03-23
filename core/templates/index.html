@@ -2,36 +2,40 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SaúdeMap</title>
-  
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-  
-  <link rel="stylesheet" href="{% static 'css/painel.css' %}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SaúdeMap Itapetinga</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}?v=15.0">
 </head>
 <body>
 
   <header class="top-bar">
     <div class="logo">
-      <span class="icon-box"><i class="bi bi-geo-alt-fill"></i></span>
+      <span class="icon-box-logo"><i class="bi bi-geo-alt-fill"></i></span>
       <div>
         <h1>SaúdeMap</h1>
-        <small>Encontre serviços de saúde</small>
+        <small>Serviços de Saúde em Itapetinga</small>
       </div>
     </div>
 
-    <div class="colab-actions">
-      {% if user.is_staff %}
-        <span class="user-btn" style="background: #198754; color: white;"><i class="bi bi-person-check-fill"></i> {{ user.username }}</span>
-        <a href="{% url 'adicionar_ponto' %}" class="user-btn" style="background:#2c3e50;"><i class="bi bi-plus-lg"></i> Adicionar Local</a>
-        <a href="{% url 'logout' %}" class="user-btn logout-btn"><i class="bi bi-box-arrow-right"></i> Sair</a>
-      {% else %}
-        <a href="{% url 'login' %}" class="user-btn"><i class="bi bi-person-badge-fill"></i> Sou Colaborador</a>
-      {% endif %}
+    <div class="top-bar-actions">
+      <button onclick="abrirSobre()" class="sobre-btn">
+        <i class="bi bi-info-circle"></i> Sobre
+      </button>
+
+      <div class="colab-actions">
+        {% if user.is_staff %}
+          <span class="user-badge"><i class="bi bi-person-check-fill"></i> {{ user.username }}</span>
+          <a href="{% url 'logout' %}" class="user-btn logout-btn"><i class="bi bi-box-arrow-right"></i></a>
+        {% else %}
+          <a href="{% url 'login' %}" class="user-btn login-btn"><i class="bi bi-person-badge-fill"></i></a>
+        {% endif %}
+      </div>
     </div>
   </header>
 
@@ -46,32 +50,23 @@
     </div>
     <div class="card">
       <div class="icon-box orange"><i class="bi bi-buildings"></i></div>
-      <h2>{{ total_postos }}</h2><p>Postos e UPAs</p>
+      <h2>{{ total_postos }}</h2><p>Postos/UPAs</p>
     </div>
   </section>
 
   <section class="filters">
-    <div class="search-container" style="position: relative; flex-grow: 1; max-width: 300px;">
-        <i class="bi bi-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; z-index: 10;"></i>
-        <input type="text" id="input-busca" placeholder="Pesquisar por nome..." onkeyup="filtrarPorNome()"
-               style="width: 100%; padding: 10px 10px 10px 38px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+    <div class="search-container">
+        <i class="bi bi-search"></i>
+        <input type="text" id="input-busca-main" placeholder="Buscar local..." onkeyup="filtrarPorNomeMain()">
     </div>
-
     <button class="active filter-btn" onclick="filtrar('todos', this)"><i class="bi bi-geo-alt"></i> Todos</button>
-    <button class="filter-btn" onclick="filtrar('HOSP', this)"><i class="bi bi-hospital"></i> Hospitais</button>
-    <button class="filter-btn" onclick="filtrar('FARM', this)"><i class="bi bi-capsule"></i> Farmácias</button>
-    <button class="filter-btn" onclick="filtrar('POST', this)"><i class="bi bi-buildings"></i> Postos</button>
+    <button class="filter-btn" onclick="filtrar('HOSP', this)"><i class="bi bi-hospital"></i> HOSP</button>
+    <button class="filter-btn" onclick="filtrar('FARM', this)"><i class="bi bi-capsule"></i> FARM</button>
     
-    <button id="btn-location" class="filter-btn" onclick="getUserLocation()" style="background: #e5eaf6; color: #0d5dd4; border: none; font-weight: bold;">
-        <i class="bi bi-send-fill"></i> Minha Local
-    </button>
-    
-    <button id="btn-limpar-rota" class="filter-btn" onclick="limparRota()" style="display:none; background: #fee2e2; color: #dc2626; border: none; font-weight: bold;">
-        <i class="bi bi-x-circle-fill"></i> Limpar Rota
-    </button>
+    <button id="btn-location" class="gps-btn" onclick="getUserLocation()"><i class="bi bi-send-fill"></i></button>
+    <button id="btn-limpar-rota" class="clear-route-btn" onclick="limparRota()" style="display:none;"><i class="bi bi-x-circle-fill"></i></button>
 
-    <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
-        <span style="font-size:0.9em; font-weight:600; color:#555;">Varredura</span>
+    <div class="scan-control">
         <label class="switch">
             <input type="checkbox" id="check-scan" checked onchange="toggleScan()">
             <span class="slider"></span>
@@ -79,41 +74,112 @@
     </div>
   </section>
 
-  <div class="button-locais">
-    <button id="btn-toggle-list" class="user-btn" style="background: #2c3e50;" onclick="abrirSidebar('lista')">
-        <i class="bi bi-list-ul"></i> Ver Locais na Tela (<span id="contador-locais">0</span>)
-    </button>
-  </div>
-
   <div id="map-container">
-      <div id="map-loader" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.9); padding: 5px 15px; border-radius: 20px; font-weight: bold; color: #555; z-index: 1000; display: none;">Buscando...</div>
+      <div id="map-loader">Buscando pontos...</div>
       <div id="map"></div>
   </div>
 
   <div id="overlay" class="overlay" onclick="fecharSidebar()"></div>
-
   <aside id="sidebar-locais" class="sidebar">
     <div class="sidebar-header">
-      <h3 id="sidebar-titulo">Locais Próximos</h3>
+      <h3 id="sidebar-titulo">Resultados</h3>
       <button onclick="fecharSidebar()"><i class="bi bi-x-lg"></i></button>
     </div>
-    
     <div id="modo-lista" class="modo-sidebar">
       <ul id="lista-locais"></ul>
     </div>
-
     <div id="modo-detalhes" class="modo-sidebar" style="display: none;">
       <div id="detalhes-local" class="detalhes-container"></div>
     </div>
   </aside>
+
+  <div id="modal-sobre" class="modal-sobre">
+    <div class="modal-sobre-content">
+        <div class="modal-sobre-header">
+            <h3>Sobre o SaúdeMap</h3>
+            <button onclick="fecharSobre()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-sobre-body">
+            <div class="sobre-item">
+                <label><i class="bi bi-people"></i> Equipe do Projeto</label>
+                <div class="equipe-lista">
+                    <div class="membro-equipe">
+                        <span class="membro-nome">Almerinda Araújo Rocha</span>
+                        <div class="membro-contatos">
+                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                        </div>
+                    </div>
+                    <div class="membro-equipe">
+                        <span class="membro-nome">Breno Oliveira</span>
+                        <div class="membro-contatos">
+                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                        </div>
+                    </div>
+                    <div class="membro-equipe">
+                        <span class="membro-nome">Crístian Batista Souto</span>
+                        <div class="membro-contatos">
+                            <a href="https://github.com/Cristian2023220" target="_blank" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:cristiansouto2019@gmail.com" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                        </div>
+                    </div>
+                    <div class="membro-equipe">
+                        <span class="membro-nome">Diogo Carneiro Limeira</span>
+                        <div class="membro-contatos">
+                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                        </div>
+                    </div>
+                    <div class="membro-equipe">
+                        <span class="membro-nome">Roberto Guimarães Santos</span>
+                        <div class="membro-contatos">
+                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                        </div>
+                    </div>
+                    <div class="membro-equipe">
+                        <span class="membro-nome">Ryan Araújo Freitas</span>
+                        <div class="membro-contatos">
+                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                        </div>
+                    </div>
+                    <div class="membro-equipe">
+                        <span class="membro-nome">Silas Correia Silva</span>
+                        <div class="membro-contatos">
+                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sobre-item">
+                <label>Instituição</label>
+                <p>IFBAIANO - Campus Itapetinga</p>
+            </div>
+            <div class="sobre-item">
+                <label>Curso</label>
+                <p>Bacharelado em Sistemas de Informação</p>
+            </div>
+            <div class="sobre-item">
+                <label>Professor Orientador</label>
+                <p>Nome do Professor (Titulação)</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            © 2026 SaúdeMap - Todos os direitos reservados.
+        </div>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
   
   <script>
     window.isUserStaff = "{% if user.is_staff %}true{% else %}false{% endif %}" === "true";
-    console.log("Usuário é Staff?", window.isUserStaff);
   </script>
-  <script src="{% static 'js/painel.js' %}"></script>
+  <script src="{% static 'js/painel.js' %}?v=15.0"></script>
 </body>
 </html>

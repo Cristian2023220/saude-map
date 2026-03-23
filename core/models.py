@@ -36,12 +36,25 @@ class PontoSaude(models.Model):
             'tipo_nome': self.get_tipo_display(),
             'telefone': getattr(self, 'telefone', 'Não informado'),
             'foto_url': self.foto.url if self.foto else None,
+            'horario_abertura': getattr(self, 'horario', 'Não informado'),
 
-            # --- LISTAS DE SERVIÇOS ---
-            'medicos': [{'id': m.id, 'nome': m.nome, 'especialidade': m.especialidade} for m in self.lista_medicos.all()],
-            'vacinas': [{'id': v.id, 'nome': v.nome, 'disponivel': v.disponivel} for v in self.lista_vacinas.all()],
-            'medicamentos': [{'id': m.id, 'nome': m.nome, 'disponivel': m.disponivel} for m in self.lista_medicamentos.all()],
-            'produtos': [{'id': p.id, 'nome': p.nome, 'disponivel': p.disponivel} for p in self.lista_produtos.all()],
+            # --- LISTAS DE SERVIÇOS (Relacionamentos Many-to-Many ou Reverse FK) ---
+            'medicos': [
+                {'id': m.id, 'nome': m.nome, 'especialidade': m.especialidade}
+                for m in self.lista_medicos.all()
+            ],
+            'vacinas': [
+                {'id': v.id, 'nome': v.nome, 'disponivel': v.disponivel}
+                for v in self.lista_vacinas.all()
+            ],
+            'medicamentos': [
+                {'id': m.id, 'nome': m.nome, 'disponivel': m.disponivel}
+                for m in self.lista_medicamentos.all()
+            ],
+            'produtos': [
+                {'id': p.id, 'nome': p.nome, 'disponivel': p.disponivel}
+                for p in self.lista_produtos.all()
+            ],
         }
 
     def calcular_distancia(self, user_lat, user_lng):

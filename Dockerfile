@@ -20,5 +20,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia o restante do código
 COPY . /app/
 
-# Comando para rodar o servidor de produção (Gunicorn)
+
+# Dá permissão de execução para o script
+RUN chmod +x build.sh
+
+# Executa o script de build
+RUN ./build.sh
+
+# Comando para iniciar o servidor
 CMD ["gunicorn", "projeto_saude.wsgi:application", "--bind", "0.0.0.0:8000"]

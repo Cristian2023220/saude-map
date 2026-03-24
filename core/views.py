@@ -1,4 +1,5 @@
 import json
+from urllib.parse import urlencode
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -227,8 +228,20 @@ def auth0_callback(request):
     return redirect('mapa')
 
 
-def auth0_logout(request):
+def logout(request):
+
     django_logout(request)
-    return_to = request.build_absolute_uri('/')
-    url = f"https://{settings.AUTH0_DOMAIN}/v2/logout?client_id={settings.AUTH0_CLIENT_ID}&returnTo={return_to}"
-    return redirect(url)
+
+    auth0_domain = 'dev-cristian220.us.auth0.com'
+    client_id = 'J9ShfRboQZtRLaWencCSTqshcxT8bWSZ'
+    return_to = 'https://saude-map.onrender.com/'
+
+    logout_url = f"https://{auth0_domain}/v2/logout?" + urlencode(
+        {
+            "returnTo": return_to,
+            "client_id": client_id,
+        },
+        quote_via=urlencode
+    )
+
+    return redirect(logout_url)

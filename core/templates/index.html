@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
     
-    <link rel="stylesheet" href="{% static 'css/painel.css' %}?v=15.0">
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}?v=18.0">
 </head>
 <body>
 
@@ -82,7 +82,7 @@
   <div id="overlay" class="overlay" onclick="fecharSidebar()"></div>
   <aside id="sidebar-locais" class="sidebar">
     <div class="sidebar-header">
-      <h3 id="sidebar-titulo">Resultados</h3>
+      <h3 id="sidebar-titulo">Resultados (<span id="contador-locais">0</span>)</h3>
       <button onclick="fecharSidebar()"><i class="bi bi-x-lg"></i></button>
     </div>
     <div id="modo-lista" class="modo-sidebar">
@@ -91,7 +91,7 @@
     <div id="modo-detalhes" class="modo-sidebar" style="display: none;">
       <div id="detalhes-local" class="detalhes-container"></div>
     </div>
-  </aside>
+</aside>
 
   <div id="modal-sobre" class="modal-sobre">
     <div class="modal-sobre-content">
@@ -104,52 +104,52 @@
                 <label><i class="bi bi-people"></i> Equipe do Projeto</label>
                 <div class="equipe-lista">
                     <div class="membro-equipe">
-                        <span class="membro-nome">Almerinda Araújo Rocha</span>
+                        <span class="membro-nome">Almerinda Araújo Rocha - DevOps & Gerente de Projetos</span>
                         <div class="membro-contatos">
-                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
-                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                            <a href="https://github.com/AlmerindaEstudo" target="_blank" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:almerindagomes388@gmail.com" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
                         </div>
                     </div>
                     <div class="membro-equipe">
-                        <span class="membro-nome">Breno Oliveira</span>
+                        <span class="membro-nome">Breno Oliveira - Front-end</span>
                         <div class="membro-contatos">
-                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
-                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                            <a href="https://github.com/brenogomespdev" target="_blank" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:brenopires137@gmail.com" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
                         </div>
                     </div>
                     <div class="membro-equipe">
-                        <span class="membro-nome">Crístian Batista Souto</span>
+                        <span class="membro-nome">Crístian Batista Souto - Back-end & DevOps</span>
                         <div class="membro-contatos">
                             <a href="https://github.com/Cristian2023220" target="_blank" class="membro-contato-link github"><i class="bi bi-github"></i></a>
                             <a href="mailto:cristiansouto2019@gmail.com" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
                         </div>
                     </div>
                     <div class="membro-equipe">
-                        <span class="membro-nome">Diogo Carneiro Limeira</span>
+                        <span class="membro-nome">Diogo Carneiro Limeira - Front-end</span>
                         <div class="membro-contatos">
-                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
-                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                            <a href="https://github.com/Cristian2023220" target="_blank" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:cristiansouto2019@gmail.com" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
                         </div>
                     </div>
                     <div class="membro-equipe">
-                        <span class="membro-nome">Roberto Guimarães Santos</span>
+                        <span class="membro-nome">Roberto Guimarães Santos - Back-end</span>
                         <div class="membro-contatos">
-                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
-                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                            <a href="https://github.com/robertog-santos" target="_blank" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:robertosantos17p@gmail.com" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
                         </div>
                     </div>
                     <div class="membro-equipe">
-                        <span class="membro-nome">Ryan Araújo Freitas</span>
+                        <span class="membro-nome">Ryan Araújo Freitas - Front-end & Banco de Dados</span>
                         <div class="membro-contatos">
-                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
-                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                            <a href="https://github.com/RyanFreitasDev25" target="_blank" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:ryan09688@gmail.com" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
                         </div>
                     </div>
                     <div class="membro-equipe">
-                        <span class="membro-nome">Silas Correia Silva</span>
+                        <span class="membro-nome">Silas Correia Silva - Front-end</span>
                         <div class="membro-contatos">
-                            <a href="#" class="membro-contato-link github"><i class="bi bi-github"></i></a>
-                            <a href="mailto:#" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
+                            <a href="https://github.com/SilasCorreia8" target="_blank" class="membro-contato-link github"><i class="bi bi-github"></i></a>
+                            <a href="mailto:silas8_silva@hotmail.com" class="membro-contato-link email"><i class="bi bi-envelope-at-fill"></i></a>
                         </div>
                     </div>
                 </div>
@@ -164,8 +164,12 @@
                 <p>Bacharelado em Sistemas de Informação</p>
             </div>
             <div class="sobre-item">
+                <label>Disciplina</label>
+                <p>Prática Curricular de Extenção - PCE2</p>
+            </div>
+            <div class="sobre-item">
                 <label>Professor Orientador</label>
-                <p>Nome do Professor (Titulação)</p>
+                <p>Prof. Ms. Francisco Helio de Oliveira - Mestre em Informática</p>
             </div>
         </div>
         <div class="modal-footer">
@@ -180,6 +184,6 @@
   <script>
     window.isUserStaff = "{% if user.is_staff %}true{% else %}false{% endif %}" === "true";
   </script>
-  <script src="{% static 'js/painel.js' %}?v=15.0"></script>
+  <script src="{% static 'js/painel.js' %}?v=16.0"></script>
 </body>
 </html>

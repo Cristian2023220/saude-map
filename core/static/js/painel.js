@@ -108,76 +108,224 @@ function renderizarNoMapaELista(locais) {
         li.onclick = () => { map.setView([local.lat, local.lng], 16); abrirDetalhesLocal(local); };
         if (listaContainer) listaContainer.appendChild(li);
     });
+
+    const elContador = document.getElementById('contador-locais');
+    if (elContador) {
+        elContador.innerText = locais.length;
+    }
+
     document.getElementById('contador-locais').innerText = locais.length;
 }
 
 // --- 5. DETALHES E COLABORADOR ---
 function abrirDetalhesLocal(local) {
     localSelecionado = local;
+    
+    let cor = 'blue'; let icone = 'bi-buildings';
+    if(local.tipo_sigla === 'HOSP') { cor = 'red'; icone = 'bi-hospital'; }
+    else if(local.tipo_sigla === 'UPA') { cor = 'orange'; icone = 'bi-building'; }
+    else if(local.tipo_sigla === 'FARM') { cor = 'blue'; icone = 'bi-capsule'; }
+
     const aberto = estaAberto(local.horario_abertura);
     let htmlFoto = local.foto_url ? `<img src="${local.foto_url}" class="local-foto-fachada">` : '';
-    
-    let html = `${htmlFoto}
+
+    let html = `
+        ${htmlFoto}
         <div class="local-header">
+            <div class="icon-box ${cor}"><i class="bi ${icone}"></i></div>
             <div class="local-header-info">
                 <h2>${local.nome}</h2>
+                <p>${local.tipo_nome}</p>
                 <span class="status-badge ${aberto ? 'status-aberto' : 'status-fechado'}">${aberto ? 'Aberto Agora' : 'Fechado'}</span>
             </div>
         </div>
         <div class="info-section">
-            <h3><i class="bi bi-geo-alt"></i> Localização</h3>
-            <div class="info-item" id="endereco-texto">Buscando endereço...</div>
-            <button onclick="tracarRota(${local.lat}, ${local.lng})" class="user-btn route-btn">
+            <h3><i class="bi bi-geo-alt"></i> Endereço</h3>
+            <div class="info-item" id="endereco-texto">Buscando...</div>
+            <button onclick="tracarRota(${local.lat}, ${local.lng})" class="user-btn route-btn-azul">
                 <i class="bi bi-sign-turn-right-fill"></i> Traçar Rota
             </button>
-        </div>`;
+        </div>
+    `;
 
-    if (local.medicos?.length > 0) {
-        html += `<div class="info-section"><h3>Médicos</h3>`;
-        local.medicos.forEach(m => { html += `<div class="medico-card"><strong>${m.nome}</strong><br><small>${m.especialidade || ''}</small></div>`; });
-        html += `</div>`;
-    }
+    if (local.medicos && local.medicos.length > 0) {
+    html += `<div class="info-section"><h3><i class="bi bi-person-badge"></i> Médicos</h3>`;
+    local.medicos.forEach(m => {
+        html += `
+            <div class="medico-card" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>${m.nome}</strong>
+                    <small>${m.especialidade || 'Clínico Geral'}</small>
+                </div>
+                ${window.isUserStaff ? `<button onclick="confirmarExclusao('medico', ${m.id})" class="btn-delete"><i class="bi bi-trash"></i></button>` : ''}
+            </div>`;
+    });
+    html += `</div>`;
+}
+
+    if (local.medicamentos && local.medicamentos.length > 0) {
+    html += `<div class="info-section"><h3><i class="bi bi-capsule"></i> Medicamentos</h3>`;
+    local.medicamentos.forEach(m => {
+        const badgeClass = m.disponivel ? "status-aberto" : "status-fechado";
+        html += `
+            <div class="vacina-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="flex-grow: 1;">${m.nome}</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="status-badge ${badgeClass}" 
+                          ${window.isUserStaff ? `onclick="alternarStatus('medicamento', ${m.id})" style="cursor:pointer;" title="Clique para mudar"` : ''}>
+                        ${m.disponivel ? 'Disponível' : 'Em falta'}
+                    </span>
+                    ${window.isUserStaff ? `<button onclick="confirmarExclusao('medicamento', ${m.id})" class="btn-delete"><i class="bi bi-trash"></i></button>` : ''}
+                </div>
+            </div>`;
+    });
+    html += `</div>`;
+}
 
     if (window.isUserStaff) {
-        let label = "Informação"; let tipoItem = "item"; let extraInput = '';
-        if (local.tipo_sigla === 'FARM') {
-            label = "Medicamento"; tipoItem = "medicamento";
-            extraInput = `<select id="novo-item-extra" class="form-control"><option value="Disponível">✅ Disponível</option><option value="Em falta">❌ Em falta</option></select>`;
-        } else {
-            label = "Médico"; tipoItem = "medico";
-            extraInput = `<input type="text" id="novo-item-extra" class="form-control" placeholder="Especialidade">`;
-        }
         html += `
         <div class="info-section edit-section">
-            <button onclick="document.getElementById('form-edicao').style.display='block'; this.style.display='none'" class="user-btn colab-btn">Painel Colaborador</button>
-            <div id="form-edicao" style="display: none; margin-top:15px;">
-                <label>${label}</label>
-                <input type="text" id="novo-item-nome" class="form-control" placeholder="Nome">
-                ${extraInput}
-                <button onclick="salvarItem('${tipoItem}')" class="user-btn save-btn">Adicionar</button>
+            <h3>PAINEL DO COLABORADOR</h3>
+            
+            <div class="colab-actions-container" style="display: flex; gap: 8px; margin-top: 10px;">
+                <button onclick="mostrarCargaItem('medico')" class="user-btn colab-action-btn medico">
+                    <i class="bi bi-plus-lg"></i> Médico
+                </button>
+                <button onclick="mostrarCargaItem('medicamento')" class="user-btn colab-action-btn medicamento">
+                    <i class="bi bi-plus-lg"></i> Medicamento
+                </button>
+            </div>
+
+            <div id="form-edicao-unificado" style="display: none; margin-top:15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                <label id="form-unificado-label" style="font-weight:bold; font-size:12px; color:#64748b; text-transform:uppercase;"></label>
+                <input type="text" id="novo-item-nome-unificado" class="form-control" placeholder="Nome" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px; margin: 8px 0;">
+                <button onclick="salvarItemUnificado()" class="user-btn route-btn-azul" style="width:100%;">
+                    <i class="bi bi-check-lg"></i> Salvar no Banco
+                </button>
             </div>
         </div>`;
     }
+
     document.getElementById('detalhes-local').innerHTML = html;
     abrirSidebar('detalhes');
+
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${local.lat}&lon=${local.lng}`)
-        .then(r => r.json()).then(d => { document.getElementById('endereco-texto').innerText = d.display_name; });
+        .then(r => r.json()).then(data => {
+            const addr = data.address;
+            document.getElementById('endereco-texto').innerText = (addr.road || "") + ", " + (addr.suburb || "");
+        });
+}
+
+window.confirmarExclusao = function(tipo, id) {
+    if (confirm(`Tem certeza que deseja excluir este ${tipo}?`)) {
+        fetch(`/api/itens/${tipo}/${id}/excluir/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'sucesso') location.reload();
+        });
+    }
+}
+
+window.alternarStatus = function(tipo, id) {
+    fetch(`/api/itens/${tipo}/${id}/alternar/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'sucesso') location.reload();
+    });
+}
+
+// Funções auxiliares para o Painel do Colaborador Restaurado
+let tipoItemAtual = 'medico'; // Variável global para saber o que estamos salvando
+
+window.mostrarCargaItem = function(tipo) {
+    tipoItemAtual = tipo;
+    document.querySelector('.colab-actions-container').style.display = 'none';
+    
+    const label = document.getElementById('form-unificado-label');
+    const input = document.getElementById('novo-item-nome-unificado');
+    const form = document.getElementById('form-edicao-unificado');
+    
+    // Mostra/Esconde campos específicos
+    const divEspecialidade = document.getElementById('div-especialidade') || criarDivEspecialidade();
+    const divDisponibilidade = document.getElementById('div-disponibilidade') || criarDivDisponibilidade();
+
+    label.innerText = `CADASTRAR ${tipo.toUpperCase()}`;
+    input.placeholder = tipo === 'medico' ? "Nome do Médico" : "Nome do Medicamento";
+    
+    // Lógica visual: Médico precisa de especialidade, Medicamento precisa de disponibilidade
+    divEspecialidade.style.display = tipo === 'medico' ? 'block' : 'none';
+    divDisponibilidade.style.display = tipo === 'medicamento' ? 'block' : 'none';
+    
+    form.style.display = 'block';
+}
+
+window.salvarItemUnificado = function() {
+    // tipoItemAtual é a variável global que definimos no passo anterior
+    if (typeof tipoItemAtual !== 'undefined') {
+        salvarItem(tipoItemAtual);
+        // Opcional: fechar o formulário após salvar
+        // fecharFormUnificado(); 
+    } else {
+        console.error("Tipo de item não definido!");
+    }
+}
+
+function fecharFormUnificado() {
+    document.getElementById('form-edicao-unificado').style.display = 'none';
+    document.querySelector('.colab-actions-container').style.display = 'flex';
 }
 
 window.salvarItem = function(tipo) {
-    const nome = document.getElementById('novo-item-nome').value;
-    const extra = document.getElementById('novo-item-extra').value;
+    const nome = document.getElementById('novo-item-nome-unificado').value;
+    const especialidade = document.getElementById('input-especialidade')?.value || "Clínico Geral";
+    const estaDisponivel = document.getElementById('check-disponivel')?.checked;
+
     if (!nome) return alert("Preencha o nome!");
-    const dados = { tipo_item: tipo, nome: nome };
-    if (tipo === 'medico') dados.especialidade = extra; else dados.status = extra;
+
     fetch(`/api/pontos/${localSelecionado.id}/adicionar-item/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-        body: JSON.stringify(dados)
-    }).then(r => r.json()).then(data => {
-        if (data.status === 'success') { alert("Salvo!"); abrirDetalhesLocal(localSelecionado); }
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            tipo_item: tipo,
+            nome: nome,
+            especialidade: especialidade, // Agora envia a especialidade para o médico
+            disponivel: estaDisponivel     // Agora envia True ou False para o remédio
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'sucesso') {
+            alert("Cadastrado com sucesso!");
+            location.reload(); // Recarrega para atualizar a lista
+        }
     });
-};
+}
+
+function criarDivEspecialidade() {
+    const html = `<div id="div-especialidade" style="margin-bottom:10px;">
+        <input type="text" id="input-especialidade" class="form-control" placeholder="Especialidade (ex: Pediatra)" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px;">
+    </div>`;
+    document.getElementById('novo-item-nome-unificado').insertAdjacentHTML('afterend', html);
+    return document.getElementById('div-especialidade');
+}
+
+function criarDivDisponibilidade() {
+    const html = `<div id="div-disponibilidade" style="margin: 10px 0; display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="check-disponivel" checked style="width:18px; height:18px;">
+        <label for="check-disponivel" style="font-size:13px; color:#1e293b; font-weight:600;">Item disponível em estoque?</label>
+    </div>`;
+    document.getElementById('novo-item-nome-unificado').insertAdjacentHTML('afterend', html);
+    return document.getElementById('div-disponibilidade');
+}
 
 // --- 6. CONTROLES MODAL E UI ---
 window.abrirSobre = () => { document.getElementById('modal-sobre').style.display = 'flex'; };

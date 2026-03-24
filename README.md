@@ -1,6 +1,6 @@
 # 🏥 SaúdeMap - Localizador de Serviços de Saúde
 
-O **SaúdeMap** é uma aplicação web desenvolvida para auxiliar usuários a encontrarem rapidamente serviços de saúde próximos à sua localização. O sistema exibe um mapa interativo contendo hospitais, farmácias, postos de saúde, UPAs e clínicas, permitindo filtrar os resultados e visualizar detalhes essenciais como horário de funcionamento, serviços prestados e medicamentos disponíveis.
+O **SaúdeMap** é uma aplicação web interativa desenvolvida para facilitar o acesso à saúde em Itapetinga/BA. O sistema permite que cidadãos localizem hospitais, farmácias e postos de saúde em tempo real, verifiquem a disponibilidade de médicos e medicamentos, e tracem rotas diretas da sua posição até o destino.
 
 ---
 
@@ -12,6 +12,15 @@ O **SaúdeMap** é uma aplicação web desenvolvida para auxiliar usuários a en
 * **Detalhamento:** Pop-ups informativos com status (Aberto/Fechado), telefone e listas de serviços/medicamentos.
 * **Dashboard de Estatísticas:** Visualização rápida da quantidade de estabelecimentos cadastrados por categoria.
 * **Painel Administrativo:** Gerenciamento completo (CRUD) dos locais via Django Admin.
+* 📍 **Traçado de Rotas Inteligente:** Integração com Leaflet Routing Machine para calcular e exibir o caminho exato entre o usuário e a unidade de saúde.
+
+👨‍⚕️ **Painel do Colaborador Integrado:** Usuários autenticados (Staff) podem atualizar em tempo real a lista de médicos de plantão e a disponibilidade de medicamentos diretamente na barra lateral.
+
+📱 **Interface Ultra-Responsiva:** Otimização para dispositivos móveis com menus adaptáveis, gestos de toque e suporte a Glassmorphism (efeitos de desfoque).
+
+ℹ️ **Seção Institucional (Sobre):** Modal detalhado com informações acadêmicas, equipe de desenvolvimento (com links diretos de contato) e dados da instituição (IFBAIANO).
+
+🔍 **Varredura Dinâmica:** Sistema de busca que atualiza os pontos automaticamente conforme o usuário move o mapa.
 
 ---
 
@@ -44,25 +53,13 @@ O projeto foi construído utilizando uma arquitetura **Monolítica** (MVT - Mode
 
 ```text
 projeto_saude/
-│
-├── core/                   # Aplicação principal
-│   ├── migrations/         # Histórico do banco de dados
-│   ├── templates/          # Arquivos HTML
-│   │   └── index.html      # Interface principal do mapa
-│   ├── admin.py            # Configuração do painel admin
-│   ├── models.py           # Estrutura do Banco de Dados
-│   ├── views.py            # Lógica do Backend e API JSON
-│   └── ...
-│
-├── projeto_saude/          # Configurações do projeto Django
-│   ├── settings.py         # Configurações globais
-│   ├── urls.py             # Rotas e URLs
-│   └── ...
-│
-├── static/                 # Arquivos estáticos (CSS, JS, Imagens)
-├── db.sqlite3              # Banco de dados (ambiente dev)
-├── manage.py               # Script de gerenciamento Django
-└── requirements.txt        # Dependências do projeto
+├── core/
+│   ├── static/
+│   │   ├── css/painel.css      # Estilização, Modal Sobre e Glassmorphism
+│   │   └── js/painel.js        # Lógica do Mapa, Rotas e API do Colaborador
+│   ├── templates/index.html    # Interface principal e Modais
+│   ├── models.py               # Definições de Pontos, Médicos e Medicamentos
+│   └── views.py                # Endpoints de API JSON e renderização
 
 
 

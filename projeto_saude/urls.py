@@ -19,6 +19,14 @@ urlpatterns = [
     path('login/', views.auth0_login, name='login'),
     path('callback/', views.auth0_callback, name='callback'),
     path('logout/', views.auth0_logout, name='logout'),
+
+
+    # Rotas para gerenciamento de itens (medicamentos, médicos, produtos gratuitos)
+    path('api/itens/<str:tipo_item>/<int:item_id>/excluir/',
+         views.excluir_item_painel, name='excluir_item'),
+    path('api/itens/<str:tipo_item>/<int:item_id>/alternar/',
+         views.alternar_disponibilidade_item, name='alternar_item'),
 ]
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

@@ -86,7 +86,7 @@ def api_pontos(request):
 # --- ÁREA DO COLABORADOR ---
 
 
-@user_passes_test(lambda u: u.is_staff) 
+@user_passes_test(lambda u: u.is_staff)
 def adicionar_ponto(request):
     if request.method == 'POST':
         form = PontoSaudeForm(request.POST, request.FILES)
@@ -115,34 +115,83 @@ def adicionar_item_painel(request, ponto_id):
             dados = json.loads(request.body)
             ponto = PontoSaude.objects.get(id=ponto_id)
             tipo_item = dados.get('tipo_item')
+            nome = dados.get('nome')
 
             if tipo_item == 'medico':
+                # Problema 2: Garante que a especialidade seja salva (ou usa um padrão)
+                especialidade = dados.get('especialidade') or 'Clínico Geral'
                 Medico.objects.create(
                     ponto=ponto,
-                    nome=dados.get('nome'),
-                    especialidade=dados.get('especialidade')
+                    nome=nome,
+                    especialidade=especialidade
                 )
+
             elif tipo_item == 'medicamento':
+                # Problema 1: Agora aceita o True/False direto do JavaScript
+                # Se não vier nada, ele assume True (Disponível) por padrão
+                is_disponivel = dados.get('disponivel', True)
                 Medicamento.objects.create(
                     ponto=ponto,
-                    nome=dados.get('nome'),
-                    disponivel=(dados.get('status') == 'Disp.')
+                    nome=nome,
+                    disponivel=is_disponivel
                 )
+
             elif tipo_item == 'produto':
+                is_disponivel = dados.get('disponivel', True)
                 ProdutoGratuito.objects.create(
                     ponto=ponto,
-                    nome=dados.get('nome'),
-                    disponivel=(dados.get('status') == 'Disp.')
+                    nome=nome,
+                    disponivel=is_disponivel
                 )
 
             return JsonResponse({'status': 'sucesso'})
+
+        except PontoSaude.DoesNotExist:
+            return JsonResponse({'status': 'erro', 'mensagem': 'Local não encontrado'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
 
     return JsonResponse({'status': 'invalido'}, status=405)
 
 
+@user_passes_test(lambda u: u.is_staff)
+def excluir_item_painel(request, tipo_item, item_id):
+    if request.method == 'POST':
+        try:
+            modelos = {
+                'medico': Medico,
+                'medicamento': Medicamento,
+                'produto': ProdutoGratuito
+            }
+            model = modelos.get(tipo_item)
+            if model:
+                item = model.objects.get(id=item_id)
+                item.delete()
+                return JsonResponse({'status': 'sucesso'})
+            return JsonResponse({'status': 'erro', 'mensagem': 'Tipo inválido'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
+
+
+@user_passes_test(lambda u: u.is_staff)
+def alternar_disponibilidade_item(request, tipo_item, item_id):
+    if request.method == 'POST':
+        try:
+            # Apenas Medicamento e Produto têm o campo 'disponivel'
+            modelos = {'medicamento': Medicamento, 'produto': ProdutoGratuito}
+            model = modelos.get(tipo_item)
+            if model:
+                item = model.objects.get(id=item_id)
+                # Inverte o valor (True vira False e vice-versa)
+                item.disponivel = not item.disponivel
+                item.save()
+                return JsonResponse({'status': 'sucesso', 'novo_estado': item.disponivel})
+            return JsonResponse({'status': 'erro'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
+
 # --- VIEWS DE LOGIN EXTERNO (AUTH0) ---
+
 
 def auth0_login(request):
     redirect_uri = request.build_absolute_uri('/callback/')

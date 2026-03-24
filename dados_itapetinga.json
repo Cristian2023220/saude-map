@@ -20,7 +20,7 @@
     "user": 1,
     "content_type": 7,
     "object_id": "2",
-    "object_repr": "Farmácia Popular",
+    "object_repr": "FarmÃ¡cia Popular",
     "action_flag": 1,
     "change_message": "[{\"added\": {}}]"
   }
@@ -33,7 +33,7 @@
     "user": 1,
     "content_type": 7,
     "object_id": "2",
-    "object_repr": "Farmácia Popular",
+    "object_repr": "FarmÃ¡cia Popular",
     "action_flag": 2,
     "change_message": "[{\"changed\": {\"fields\": [\"Hor\\u00e1rio de Funcionamento\"]}}]"
   }
@@ -46,7 +46,7 @@
     "user": 1,
     "content_type": 7,
     "object_id": "3",
-    "object_repr": "Centro de Saúde Guilherme Dias",
+    "object_repr": "Centro de SaÃºde Guilherme Dias",
     "action_flag": 1,
     "change_message": "[{\"added\": {}}]"
   }
@@ -109,7 +109,7 @@
   "model": "core.pontosaude",
   "pk": 2,
   "fields": {
-    "nome": "Farmácia Popular",
+    "nome": "FarmÃ¡cia Popular",
     "tipo": "FARM",
     "telefone": "(77) 3261-4002",
     "horario": "Seg a Sex, 08:00 - 20:00",
@@ -124,11 +124,11 @@
   "model": "core.pontosaude",
   "pk": 3,
   "fields": {
-    "nome": "Centro de Saúde Guilherme Dias",
+    "nome": "Centro de SaÃºde Guilherme Dias",
     "tipo": "HOSP",
     "telefone": "",
-    "horario": "Segunda a Sexta, 07h30 às 17h00",
-    "servicos": "Centro de Saúde Municipal. Oferece consultas com especialistas, exames laboratoriais e procedimentos ambulatoriais de média complexidade.",
+    "horario": "Segunda a Sexta, 07h30 Ã s 17h00",
+    "servicos": "Centro de SaÃºde Municipal. Oferece consultas com especialistas, exames laboratoriais e procedimentos ambulatoriais de mÃ©dia complexidade.",
     "medicamentos_texto": "",
     "foto": "",
     "latitude": "-40.530000",
@@ -142,7 +142,7 @@
     "nome": "Caps",
     "tipo": "HOSP",
     "telefone": "",
-    "horario": "Segunda a Sexta, 08h00 às 18h00",
+    "horario": "Segunda a Sexta, 08h00 Ã s 18h00",
     "servicos": "",
     "medicamentos_texto": "",
     "foto": "",

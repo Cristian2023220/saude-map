@@ -343,3 +343,95 @@ body {
     filter: brightness(0.9);
     transform: scale(1.05);
 }
+
+/* --- ESTILO DO LOGO CLICÁVEL (AJUSTE) --- */
+
+/* Remove sublinhado e cor azul padrão do link */
+.logo-link { 
+    text-decoration: none; 
+    color: inherit; /* Herda as cores do H1 e SMALL de dentro */
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    transition: 0.2s ease;
+}
+
+/* Efeito de hover (opcional, mas fica bom): Brilha um pouco ao passar o mouse */
+.logo-link:hover { 
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* Garante que o H1 não mude de estilo por estar dentro de um link */
+.logo h1 { 
+    font-size: 20px; 
+    color: #1e293b; /* Mesma cor da sua imagem efdd0a.jpg */
+    font-weight: 800; 
+    letter-spacing: -0.5px; 
+    margin: 0;
+}
+
+.logo small { 
+    color: #64748b; 
+    font-weight: 500; 
+    display: block; 
+    margin-top: -2px; 
+}
+
+/* --- ESTILO DO QUADRO DE INSTRUÇÕES (ROTA) --- */
+
+.leaflet-routing-container {
+    background-color: white !important;
+    padding: 15px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+    max-width: 300px !important;
+    max-height: 400px;
+    overflow-y: auto;
+    border: none !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+/* Deixa o título do trajeto mais bonito */
+.leaflet-routing-alt h2 {
+    font-size: 16px !important;
+    color: #1e293b !important;
+    font-weight: 800 !important;
+}
+
+/* Estiliza as linhas de instrução individuais */
+.leaflet-routing-alt table {
+    font-size: 13px !important;
+    color: #64748b !important;
+}
+
+/* Remove aquela borda chata que fica em volta do quadro */
+.leaflet-bar {
+    border: none !important;
+}
+
+/* Responsividade: No celular, o quadro fica menor para não tapar o mapa todo */
+@media (max-width: 480px) {
+    .leaflet-routing-container {
+        max-width: 250px !important;
+        font-size: 11px !important;
+    }
+}
+
+/* Torna o quadro de rotas minimizável visualmente */
+.leaflet-routing-container {
+    transition: all 0.3s ease;
+    max-height: 50px; /* Começa fechado ou curto */
+    overflow: hidden;
+}
+
+/* Quando o mouse passa por cima, ele expande para mostrar as instruções */
+.leaflet-routing-container:hover {
+    max-height: 400px;
+}
+
+/* Estilo do botão de limpar para destacar bem */
+#btn-limpar-rota:hover {
+    background: #fecaca !important;
+    transform: scale(1.05);
+}

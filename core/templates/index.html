@@ -10,17 +10,17 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
     
-    <link rel="stylesheet" href="{% static 'css/painel.css' %}?v=18.0">
+    <link rel="stylesheet" href="{% static 'css/painel.css' %}?v=19.0">
 </head>
 <body>
 
   <header class="top-bar">
     <div class="logo">
-      <span class="icon-box-logo"><i class="bi bi-geo-alt-fill"></i></span>
-      <div>
-        <h1>SaúdeMap</h1>
-        <small>Serviços de Saúde em Itapetinga</small>
-      </div>
+        <a href="/" class="logo-link">
+            <i class="bi bi-heart-pulse-fill text-danger fs-3"></i> <div>
+                <h1>SaúdeMap</h1>
+                <small>Localizador Itapetinga/BA</small> </div>
+        </a>
     </div>
 
     <div class="top-bar-actions">
@@ -62,8 +62,16 @@
     <button class="active filter-btn" onclick="filtrar('todos', this)"><i class="bi bi-geo-alt"></i> Todos</button>
     <button class="filter-btn" onclick="filtrar('HOSP', this)"><i class="bi bi-hospital"></i> HOSP</button>
     <button class="filter-btn" onclick="filtrar('FARM', this)"><i class="bi bi-capsule"></i> FARM</button>
+    <div class="filters">
+    <button id="btn-limpar-rota" class="filter-btn" onclick="limparRota()" 
+            style="display:none; background: #fee2e2; color: #dc2626; border: none; font-weight: bold;">
+        <i class="bi bi-x-circle-fill"></i> Limpar Rota
+    </button>
+</div>
     
-    <button id="btn-location" class="gps-btn" onclick="getUserLocation()"><i class="bi bi-send-fill"></i></button>
+    <button onclick="localizarUsuario()" class="gps-btn">
+    <i class="bi bi-crosshair"></i>
+</button>
     <button id="btn-limpar-rota" class="clear-route-btn" onclick="limparRota()" style="display:none;"><i class="bi bi-x-circle-fill"></i></button>
 
     <div class="scan-control">
@@ -184,6 +192,6 @@
   <script>
     window.isUserStaff = "{% if user.is_staff %}true{% else %}false{% endif %}" === "true";
   </script>
-  <script src="{% static 'js/painel.js' %}?v=16.0"></script>
+  <script src="{% static 'js/painel.js' %}?v=17.0"></script>
 </body>
 </html>

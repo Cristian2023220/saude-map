@@ -1,12 +1,12 @@
 // --- 1. VARIÁVEIS E INICIALIZAÇÃO ---
 let markers = [];
-let userPos = { lat: null, lng: null };
 let userMarker = null;
 let filtroTipo = 'todos';
 let isScanActive = true; 
 let debounceTimer;
 let localSelecionado = null;
 window.controleRota = null; 
+let userPos = { lat: null, lng: null };
 
 const sidebar = document.getElementById('sidebar-locais');
 const overlay = document.getElementById('overlay');
@@ -332,9 +332,70 @@ window.abrirSobre = () => { document.getElementById('modal-sobre').style.display
 window.fecharSobre = () => { document.getElementById('modal-sobre').style.display = 'none'; };
 function abrirSidebar(modo) { sidebar.classList.add('open'); overlay.classList.add('active'); document.getElementById('modo-lista').style.display = modo === 'lista' ? 'block' : 'none'; document.getElementById('modo-detalhes').style.display = modo === 'detalhes' ? 'flex' : 'none'; }
 function fecharSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
-window.getUserLocation = () => { navigator.geolocation.getCurrentPosition(pos => { userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude }; carregarPontos(); }); };
-window.tracarRota = (lat, lng) => { if (window.controleRota) map.removeControl(window.controleRota); window.controleRota = L.Routing.control({ waypoints: [L.latLng(userPos.lat, userPos.lng), L.latLng(lat, lng)], createMarker: () => null }).addTo(map); fecharSidebar(); };
-window.limparRota = () => { if (window.controleRota) { map.removeControl(window.controleRota); window.controleRota = null; } };
+
+
+window.localizarUsuario = function() {
+    navigator.geolocation.getCurrentPosition((pos) => {
+        // ESSENCIAL: Salvar para o traçar rotas usar depois
+        userPos.lat = pos.coords.latitude;
+        userPos.lng = pos.coords.longitude;
+        
+        map.setView([userPos.lat, userPos.lng], 15);
+
+            // Marcador do usuário (Ponto Azul)
+            if (window.marcadorUsuario) {
+                window.marcadorUsuario.setLatLng([userPos.lat, userPos.lng]);
+            } else {
+                const iconUser = L.divIcon({
+                    className: 'user-location-icon',
+                    html: '<div style="background:#0284c7; width:15px; height:15px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>',
+                    iconSize: [20, 20]
+                });
+                window.marcadorUsuario = L.marker([userPos.lat, userPos.lng], { icon: iconUser }).addTo(map);
+            }
+            
+            // Chama a função de carregar pontos próximos
+            carregarPontos(); 
+        },
+        (erro) => {
+            alert("Erro ao obter localização. Verifique as permissões do navegador.");
+        },
+        { enableHighAccuracy: true }
+    );
+}
+
+window.tracarRota = (lat, lng) => { 
+    if (window.controleRota) map.removeControl(window.controleRota); 
+    
+    window.controleRota = L.Routing.control({ 
+        waypoints: [
+            L.latLng(userPos.lat, userPos.lng), 
+            L.latLng(lat, lng)
+        ], 
+        show: true,
+        addWaypoints: false,
+        draggableWaypoints: false,
+        language: 'pt-BR',
+        createMarker: () => null 
+    }).addTo(map); 
+    
+    // MOSTRA O BOTÃO DE LIMPAR
+    document.getElementById('btn-limpar-rota').style.display = 'flex';
+    
+    fecharSidebar(); 
+};
+window.limparRota = function() {
+    if (window.controleRota) {
+        map.removeControl(window.controleRota);
+        window.controleRota = null;
+    }
+    
+    // ESCONDE O BOTÃO NOVAMENTE
+    document.getElementById('btn-limpar-rota').style.display = 'none';
+    
+    // Opcional: Centraliza o mapa de volta no usuário
+    if (userPos.lat) map.setView([userPos.lat, userPos.lng], 14);
+}
 window.toggleScan = () => { isScanActive = document.getElementById('check-scan').checked; carregarPontos(); };
 window.filtrar = (tipo, btn) => { filtroTipo = tipo; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); carregarPontos(); };
 window.filtrarPorNomeMain = () => { const termo = document.getElementById('input-busca-main').value.toLowerCase(); markers.forEach(m => { m.marker.addTo(map); if (!m.nome.includes(termo)) map.removeLayer(m.marker); }); };

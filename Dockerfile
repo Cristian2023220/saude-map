@@ -1,31 +1,29 @@
-# Use uma versão estável do Python
 FROM python:3.12-slim
 
-# Evita que o Python gere arquivos .pyc e permite log em tempo real
+# Evita arquivos .pyc e permite log em tempo real
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Define a pasta de trabalho
 WORKDIR /app
 
-# Instala dependências do sistema necessárias para o PostgreSQL e Imagens
+# Instala dependências do sistema
 RUN apt-get update && apt-get install -y \
-    libpq-dev gcc python3-dev musl-dev \
+    libpq-dev gcc python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Instala as bibliotecas do projeto
+# Instala bibliotecas
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia o restante do código
+# --- AQUI É O SEGREDO ---
+# Primeiro: Copiamos TUDO (incluindo o seu JSON de dados)
 COPY . /app/
 
+# Segundo: Geramos os arquivos estáticos (CSS/JS)
+RUN python manage.py collectstatic --no-input
 
-# Dá permissão de execução para o script
-RUN chmod +x build.sh
-
-# Executa o script de build
-RUN ./build.sh
-
-# Comando para iniciar o servidor
-CMD ["gunicorn", "projeto_saude.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Terceiro: Comando de inicialização
+# Ele vai rodar as migrações, carregar seus dados e ligar o servidor, TUDO DE UMA VEZ
+CMD python manage.py migrate && \
+    python manage.py loaddata dados_itapetinga.json --exclude contenttypes --exclude auth.permission && \
+    gunicorn projeto_saude.wsgi:application --bind 0.0.0.0:8000

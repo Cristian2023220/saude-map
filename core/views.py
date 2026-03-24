@@ -228,7 +228,7 @@ def auth0_callback(request):
     return redirect('mapa')
 
 
-def logout(request):
+def auth0_logout(request):
 
     django_logout(request)
 

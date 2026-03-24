@@ -1,6 +1,9 @@
 import os
 from pathlib import Path
+import dj_database_url
 from dotenv import load_dotenv
+from pathlib import Path
+
 
 # 1. PRIMEIRO: Definimos onde é a raiz do projeto (BASE_DIR)
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,11 +18,11 @@ AUTH0_CLIENT_ID = os.getenv('AUTH0_CLIENT_ID')
 AUTH0_CLIENT_SECRET = os.getenv('AUTH0_CLIENT_SECRET')
 
 
-SECRET_KEY = 'django-insecure-#x6d6mtmsob7k+@y_vd#@)3_e*6#we+a5zy^+uiqi^0f01l2p*'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'chave-padrao-temporaria')
 
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # Depois trocaremos pelo link do Render
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
@@ -40,6 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -72,14 +76,10 @@ WSGI_APPLICATION = 'projeto_saude.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'saude_map_db',    #
-        'USER': 'root',            #
-        'PASSWORD': '04180420',
-        'HOST': '127.0.0.1',       #
-        'PORT': '3306',            #
-    }
+    'default': dj_database_url.config(
+        default=f"mysql://root:04180420@127.0.0.1:3306/saude_map_db",
+        conn_max_age=600
+    )
 }
 
 
@@ -110,11 +110,14 @@ USE_I18N = True
 
 USE_TZ = True
 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+
 
 # Configuração para arquivos de mídia (Uploads)
 MEDIA_URL = '/media/'

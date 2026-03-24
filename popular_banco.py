@@ -1,13 +1,12 @@
-from core.models import PontoSaude, Medicamento
 import os
 import django
 
-# Configura o ambiente do Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'projeto_saude.settings')
 django.setup()
 
 
 def popular():
+    from core.models import PontoSaude, Medicamento
     print("🚀 Iniciando povoamento de dados de Itapetinga...")
 
     # 1. Lista de PSFs e Unidades
@@ -59,20 +58,20 @@ def popular():
     # Buscamos uma unidade de referência para vincular os remédios
     # Vou usar o Guilherme Dias que acabamos de criar
     try:
-        ponto_referencia = PontoSaude.objects.get(
+        ponto_ref = PontoSaude.objects.get(
             nome="Centro de Saúde Guilherme Dias")
+        medicamentos = ["Aciclovir 200mg",
+                        "Ácido acetilsalícílico 100mg", "Albendazol 400mg"]
 
         for med_nome in medicamentos:
-            # Agora passamos o 'ponto' para evitar o erro de IntegrityError
             med, created = Medicamento.objects.get_or_create(
                 nome=med_nome,
-                ponto=ponto_referencia  # <--- O VÍNCULO OBRIGATÓRIO AQUI
+                ponto=ponto_ref
             )
             if created:
                 print(f"💊 Medicamento adicionado: {med_nome}")
-
     except PontoSaude.DoesNotExist:
-        print("❌ Erro: Não encontrei a unidade Guilherme Dias para vincular os remédios.")
+        print("⚠️ Unidade Guilherme Dias não encontrada para vincular remédios.")
 
 
 if __name__ == "__main__":

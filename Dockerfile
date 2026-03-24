@@ -4,6 +4,7 @@ FROM python:3.12-slim
 # Configurações para logs em tempo real e performance
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV DOCKER_BUILD 1
 
 WORKDIR /app
 

@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'projeto_saude.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"mysql://root:04180420@127.0.0.1:3306/saude_map_db",
+        default='sqlite:///db.sqlite3',
         conn_max_age=600
     )
 }
@@ -116,7 +116,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
-
 
 
 # Configuração para arquivos de mídia (Uploads)

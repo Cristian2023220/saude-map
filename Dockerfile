@@ -1,5 +1,5 @@
 # Use uma versão estável do Python
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # Evita que o Python gere arquivos .pyc e permite log em tempo real
 ENV PYTHONDONTWRITEBYTECODE 1

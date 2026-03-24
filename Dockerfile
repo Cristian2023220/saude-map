@@ -1,29 +1,30 @@
+# Usa Python 3.12 que é compatível com Django 6.0
 FROM python:3.12-slim
 
-# Evita arquivos .pyc e permite log em tempo real
+# Configurações para logs em tempo real e performance
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
-# Instala dependências do sistema
+# Instala as ferramentas de sistema para o banco de dados
 RUN apt-get update && apt-get install -y \
     libpq-dev gcc python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Instala bibliotecas
+# Instala as bibliotecas do requirements.txt
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# --- AQUI É O SEGREDO ---
-# Primeiro: Copiamos TUDO (incluindo o seu JSON de dados)
+# Copia todo o seu projeto para dentro do Docker (incluindo o seu JSON de dados)
 COPY . /app/
 
-# Segundo: Geramos os arquivos estáticos (CSS/JS)
+# Coleta os arquivos estáticos (CSS/JS) durante a montagem da imagem
 RUN python manage.py collectstatic --no-input
 
-# Terceiro: Comando de inicialização
-# Ele vai rodar as migrações, carregar seus dados e ligar o servidor, TUDO DE UMA VEZ
+# --- O PULO DO GATO ---
+# O comando abaixo roda as migrações, carrega seus dados e liga o servidor
+# Tudo em uma única linha de comando no final
 CMD python manage.py migrate && \
     python manage.py loaddata dados_itapetinga.json --exclude contenttypes --exclude auth.permission && \
     gunicorn projeto_saude.wsgi:application --bind 0.0.0.0:8000

@@ -200,12 +200,9 @@ def auth0_login(request):
 
 
 def auth0_callback(request):
-    # Se o usuário clicou em "Recusar" ou houve algum erro no Auth0
     if request.GET.get('error'):
-        # Redireciona de forma silenciosa de volta para a tela inicial
         return redirect('mapa')
 
-    # 2. FLUXO NORMAL DE LOGIN
     try:
         token = oauth.auth0.authorize_access_token(request)
         user_info = token.get('userinfo')
@@ -213,6 +210,7 @@ def auth0_callback(request):
         username = user_info.get('nickname') or user_info.get('name')
         email = user_info.get('email')
 
+        # Cria ou recupera o usuário
         user, created = User.objects.get_or_create(
             username=username,
             defaults={'email': email}
@@ -222,26 +220,24 @@ def auth0_callback(request):
         return redirect('mapa')
 
     except Exception as e:
+        # Isso ajuda a ver o erro no log do Render
+        print(f"Erro no Callback: {e}")
         return redirect('mapa')
-
-    django_login(request, user)
-    return redirect('mapa')
 
 
 def auth0_logout(request):
-
+    # 1. Faz o logout no Django
     django_logout(request)
 
     auth0_domain = 'dev-cristian220.us.auth0.com'
     client_id = 'J9ShfRboQZtRLaWencCSTqshcxT8bWSZ'
     return_to = 'https://saude-map.onrender.com/'
 
-    logout_url = f"https://{auth0_domain}/v2/logout?" + urlencode(
-        {
-            "returnTo": return_to,
-            "client_id": client_id,
-        },
-        quote_via=urlencode
-    )
+    params = {
+        'returnTo': return_to,
+        'client_id': client_id,
+    }
+
+    logout_url = f"https://{auth0_domain}/v2/logout?{urlencode(params)}"
 
     return redirect(logout_url)

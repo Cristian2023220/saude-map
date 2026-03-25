@@ -24,7 +24,13 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'chave-padrao-temporaria')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']  # Depois trocaremos pelo link do Render
+ALLOWED_HOSTS = ['saude-map.onrender.com', 'localhost', '127.0.0.1']
+CSRF_TRUSTED_ORIGINS = [
+    'https://saude-map.onrender.com',
+]
+
+# 3. Garante que o Django entenda que o Render está usando HTTPS (segurança extra)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [

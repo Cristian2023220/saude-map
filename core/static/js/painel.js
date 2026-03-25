@@ -330,7 +330,21 @@ function criarDivDisponibilidade() {
 // --- 6. CONTROLES MODAL E UI ---
 window.abrirSobre = () => { document.getElementById('modal-sobre').style.display = 'flex'; };
 window.fecharSobre = () => { document.getElementById('modal-sobre').style.display = 'none'; };
-function abrirSidebar(modo) { sidebar.classList.add('open'); overlay.classList.add('active'); document.getElementById('modo-lista').style.display = modo === 'lista' ? 'block' : 'none'; document.getElementById('modo-detalhes').style.display = modo === 'detalhes' ? 'flex' : 'none'; }
+function abrirSidebar(modo) { 
+    const sidebar = document.getElementById('sidebar-locais');
+    const overlay = document.getElementById('overlay');
+
+    sidebar.classList.add('open'); 
+    overlay.classList.add('active'); 
+    
+    document.getElementById('modo-lista').style.display = modo === 'lista' ? 'block' : 'none'; 
+    document.getElementById('modo-detalhes').style.display = modo === 'detalhes' ? 'flex' : 'none'; 
+
+    // NOVO: Se o modo for lista, manda o sistema buscar os pontos atualizados
+    if (modo === 'lista') {
+        carregarPontos(); 
+    }
+}
 function fecharSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
 
 

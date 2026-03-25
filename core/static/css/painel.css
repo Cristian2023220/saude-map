@@ -435,3 +435,31 @@ body {
     background: #fecaca !important;
     transform: scale(1.05);
 }
+.ver-lista-btn {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    white-space: nowrap;
+}
+
+.ver-lista-btn:hover {
+    background-color: #1d4ed8;
+}
+
+/* Estilo para o cálculo de distância na lista */
+.distancia-tag {
+    font-size: 0.85rem;
+    color: #059669;
+    font-weight: bold;
+    background: #ecfdf5;
+    padding: 2px 6px;
+    border-radius: 4px;
+}

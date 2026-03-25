@@ -29,11 +29,29 @@
       </button>
 
       <div class="colab-actions">
-        {% if user.is_staff %}
-          <span class="user-badge"><i class="bi bi-person-check-fill"></i> {{ user.username }}</span>
-          <a href="{% url 'logout' %}" class="user-btn logout-btn"><i class="bi bi-box-arrow-right"></i></a>
+        {% if user.is_authenticated %}
+          {# 1. Se for STAFF, mostra o badge com o check (Colaborador) #}
+          {% if user.is_staff %}
+            <span class="user-badge" title="Colaborador">
+                <i class="bi bi-person-check-fill"></i> {{ user.username }}
+            </span>
+          {# 2. Se for USUÁRIO COMUM, mostra um ícone simples #}
+          {% else %}
+            <span class="user-badge" title="Usuário">
+                <i class="bi bi-person-fill"></i> {{ user.username }}
+            </span>
+          {% endif %}
+          
+          {# 3. O botão de SAIR agora aparece para ambos os casos acima #}
+          <a href="{% url 'logout' %}" class="user-btn logout-btn" title="Sair">
+              <i class="bi bi-box-arrow-right"></i>
+          </a>
+
         {% else %}
-          <a href="{% url 'login' %}" class="user-btn login-btn"><i class="bi bi-person-badge-fill"></i></a>
+          {# 4. Se não estiver logado, mostra apenas o botão de LOGIN #}
+          <a href="{% url 'login' %}" class="user-btn login-btn" title="Entrar / Colaborar">
+              <i class="bi bi-person-badge-fill"></i>
+          </a>
         {% endif %}
       </div>
     </div>

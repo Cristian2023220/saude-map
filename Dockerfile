@@ -27,5 +27,6 @@ RUN python manage.py collectstatic --no-input
 # O comando abaixo roda as migrações, carrega seus dados e liga o servidor
 # Tudo em uma única linha de comando no final
 CMD python manage.py migrate && \
+    python manage.py createsuperuser --no-input || true && \
     python popular_banco.py && \
     gunicorn projeto_saude.wsgi:application --bind 0.0.0.0:8000

@@ -192,12 +192,9 @@ def alternar_disponibilidade_item(request, tipo_item, item_id):
             return JsonResponse({'status': 'erro', 'mensagem': str(e)}, status=400)
 
 # --- VIEWS DE LOGIN EXTERNO (AUTH0) ---
-
-
 def auth0_login(request):
     redirect_uri = request.build_absolute_uri('/callback/')
     return oauth.auth0.authorize_redirect(request, redirect_uri)
-
 
 def auth0_callback(request):
     if request.GET.get('error'):
@@ -223,7 +220,6 @@ def auth0_callback(request):
         # Isso ajuda a ver o erro no log do Render
         print(f"Erro no Callback: {e}")
         return redirect('mapa')
-
 
 def auth0_logout(request):
     # 1. Faz o logout no Django

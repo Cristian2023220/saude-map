@@ -18,7 +18,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
 }).addTo(map);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-// FORÇAR RESOLUÇÃO CORRETA (Corrige mapa iniciando pequeno)
+
 setTimeout(() => { map.invalidateSize(); }, 500);
 
 // --- 2. AUXILIARES ---

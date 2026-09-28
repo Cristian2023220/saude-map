@@ -13,9 +13,9 @@ const overlay = document.getElementById('overlay');
 
 // Inicialização com correção
 const map = L.map('map', { zoomControl: false }).setView([-15.2493, -40.2476], 14);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by Humanitarian OpenStreetMap Team'
 }).addTo(map);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 

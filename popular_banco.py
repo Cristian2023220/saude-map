@@ -72,6 +72,9 @@ def popular():
                     **filtro_medicamento
                 )
 
+    PontoSaude.objects.all().update(horario="24 horas")
+    print("🕒 Todos os postos foram atualizados para '24 horas'!")
+
     print("✅ Povoamento concluído para todos os 11 postos!")
 
 if __name__ == "__main__":
